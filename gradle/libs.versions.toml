@@ -1,6 +1,6 @@
 [versions]
 androidApplication = "8.8.0"
-andromedaVersion = "13.0.0"
+andromedaVersion = "13.0.1"
 constraintlayout = "2.2.0"
 coreKtx = "1.15.0"
 appcompat = "1.7.0"
