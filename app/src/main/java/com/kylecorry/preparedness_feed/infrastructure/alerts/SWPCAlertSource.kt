@@ -39,7 +39,8 @@ class SWPCAlertSource(context: Context) : AlertSource {
                 "https://www.swpc.noaa.gov/",
                 serialNumber,
                 ZonedDateTime.parse(it.issue_datetime.replace(" ", "T") + "Z"),
-                it.message
+                it.message,
+                useLinkForSummary = false
             )
         }.filter { it.publishedDate.isAfter(since) }
     }
