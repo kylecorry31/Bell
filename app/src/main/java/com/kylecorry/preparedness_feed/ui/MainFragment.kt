@@ -21,6 +21,7 @@ import com.kylecorry.andromeda.views.reactivity.AndromedaViews.Text
 import com.kylecorry.andromeda.views.reactivity.VDOMNode
 import com.kylecorry.preparedness_feed.databinding.FragmentMainBinding
 import com.kylecorry.preparedness_feed.domain.Alert
+import com.kylecorry.preparedness_feed.infrastructure.alerts.CDCAlertSource
 import com.kylecorry.preparedness_feed.infrastructure.alerts.ExecutiveOrderAlertSource
 import com.kylecorry.preparedness_feed.infrastructure.alerts.NationalWeatherServiceAlertSource
 import com.kylecorry.preparedness_feed.infrastructure.alerts.SWPCAlertSource
@@ -47,6 +48,8 @@ class MainFragment : BoundFragment<FragmentMainBinding>() {
 
         val (alerts, setAlerts) = useState(emptyList<Alert>())
         val (loading, setLoading) = useState(false)
+        val (progress, setProgress) = useState(0f)
+        val (loadingMessage, setLoadingMessage) = useState("")
         val context = useAndroidContext()
 
         val preferences = useMemo(context) {
@@ -71,17 +74,33 @@ class MainFragment : BoundFragment<FragmentMainBinding>() {
 
         val updateAlerts = useCallback<Unit>(context, alerts) {
             setLoading(true)
+            setLoadingMessage("Sources")
+            setProgress(0f)
             inBackground {
                 repo.cleanup()
 
                 val minTime = ZonedDateTime.now().minusDays(7)
-                val weather = NationalWeatherServiceAlertSource(context, "RI").getAlerts(minTime)
-                val executiveOrders = ExecutiveOrderAlertSource(context).getAlerts(minTime)
-                val earthquakes = USGSEarthquakeAlertSource(context).getAlerts(minTime)
-                val water = USGSWaterAlertSource(context).getAlerts(minTime)
-                val spaceWeather = SWPCAlertSource(context).getAlerts(minTime)
-                val allAlerts =
-                    (weather + executiveOrders + earthquakes + water + spaceWeather).sortedByDescending { it.publishedDate }
+
+                // TODO: Download alerts in parallel
+                val sources = listOf(
+                    NationalWeatherServiceAlertSource(context, "RI"),
+                    ExecutiveOrderAlertSource(context),
+                    USGSEarthquakeAlertSource(context),
+                    USGSWaterAlertSource(context),
+                    SWPCAlertSource(context),
+                    CDCAlertSource()
+                )
+
+                val allAlerts = mutableListOf<Alert>()
+
+                for (index in sources.indices) {
+                    setProgress(index.toFloat() / sources.size)
+                    val source = sources[index]
+                    allAlerts.addAll(source.getAlerts(minTime))
+                }
+
+                // Remove all old alerts
+                allAlerts.removeIf { it.publishedDate.isBefore(minTime) }
 
                 val newAlerts = allAlerts.filter { alert ->
                     alerts.none { it.uniqueId == alert.uniqueId && it.source == alert.source }
@@ -97,8 +116,14 @@ class MainFragment : BoundFragment<FragmentMainBinding>() {
                     }
                 }
 
+                setProgress(0f)
+                setLoadingMessage("Summarizing")
+
+                var completedSummaryCount = 0
+
                 // Generate summaries and save new/updated alerts
                 (newAlerts + updatedAlerts).forEach { alert ->
+                    setProgress(completedSummaryCount.toFloat() / (newAlerts.size + updatedAlerts.size))
                     val summary = if (alert.useLinkForSummary) {
                         gemini.summarizeUrl(alert.link)
                     } else {
@@ -109,6 +134,7 @@ class MainFragment : BoundFragment<FragmentMainBinding>() {
                     val newAlert = alert.copy(summary = summary)
                     repo.upsert(newAlert)
                     setAlerts(repo.getAll())
+                    completedSummaryCount++
                 }
                 setLoading(false)
             }
@@ -161,7 +187,7 @@ class MainFragment : BoundFragment<FragmentMainBinding>() {
             Column(
                 if (loading) {
                     Text {
-                        text = "Loading..."
+                        text = "Loading $loadingMessage ${progress?.times(100)?.toInt()}%"
                         marginTop = dp16
                         marginStart = dp16
                         marginEnd = dp16

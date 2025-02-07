@@ -119,6 +119,9 @@ dependencies {
     // Volley
     implementation(libs.volley)
 
+    // Jsoup
+    implementation(libs.jsoup)
+
     // Hilt
     implementation(libs.hilt.android)
     ksp(libs.hilt.android.compiler)

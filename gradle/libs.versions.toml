@@ -30,6 +30,7 @@ luna = "0.3.6"
 workRuntimeKtx = "2.10.0"
 preferenceKtx = "1.2.1"
 volley = "1.2.1"
+jsoup = "1.18.3"
 
 [libraries]
 androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version.ref = "constraintlayout" }
@@ -78,6 +79,7 @@ mockito-kotlin = { module = "org.mockito.kotlin:mockito-kotlin", version.ref = "
 sol = { module = "com.kylecorry:sol", version.ref = "sol" }
 luna = { module = "com.kylecorry:luna", version.ref = "luna" }
 volley = { module = "com.android.volley:volley", version.ref = "volley" }
+jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "androidApplication" }
