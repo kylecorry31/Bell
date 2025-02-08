@@ -1,5 +1,7 @@
 package com.kylecorry.preparedness_feed.ui.components
 
+import android.view.Gravity
+import android.view.ViewGroup
 import com.kylecorry.andromeda.core.system.Intents
 import com.kylecorry.andromeda.core.ui.useCallback
 import com.kylecorry.andromeda.core.ui.useSizeDp
@@ -8,7 +10,6 @@ import com.kylecorry.andromeda.fragments.useBackgroundEffect
 import com.kylecorry.andromeda.views.reactivity.AndromedaViews.Column
 import com.kylecorry.andromeda.views.reactivity.AndromedaViews.Component
 import com.kylecorry.andromeda.views.reactivity.AndromedaViews.Text
-import com.kylecorry.andromeda.views.reactivity.ViewAttributes
 import com.kylecorry.preparedness_feed.domain.Alert
 import com.kylecorry.preparedness_feed.infrastructure.alerts.AlertUpdater
 import com.kylecorry.preparedness_feed.infrastructure.persistence.AlertRepo
@@ -73,6 +74,8 @@ fun Alerts() = Component {
             marginStart = dp16
             marginEnd = dp16
             marginBottom = dp16
+            layoutGravity = Gravity.CENTER_HORIZONTAL
+            width = ViewGroup.LayoutParams.WRAP_CONTENT
         }
     } else {
         UpdateButton {
@@ -81,6 +84,8 @@ fun Alerts() = Component {
             marginStart = dp16
             marginEnd = dp16
             marginBottom = dp16
+            layoutGravity = Gravity.CENTER_HORIZONTAL
+            width = ViewGroup.LayoutParams.WRAP_CONTENT
         }
     },
         AlertList {
