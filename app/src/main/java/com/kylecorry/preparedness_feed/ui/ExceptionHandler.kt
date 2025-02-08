@@ -4,9 +4,9 @@ import android.content.Context
 import android.util.Log
 import com.kylecorry.andromeda.alerts.Alerts
 import com.kylecorry.andromeda.core.system.Intents
-import com.kylecorry.andromeda.exceptions.*
+import com.kylecorry.andromeda.exceptions.BugReportEmailMessage
+import com.kylecorry.preparedness_feed.BuildConfig
 import com.kylecorry.preparedness_feed.R
-import com.kylecorry.preparedness_feed.infrastructure.errors.FragmentDetailsBugReportGenerator
 
 object ExceptionHandler {
 
@@ -49,5 +49,4 @@ object ExceptionHandler {
 
         CustomExceptionHandler.error = null
     }
-
 }

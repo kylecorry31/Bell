@@ -14,7 +14,7 @@ import com.kylecorry.preparedness_feed.infrastructure.alerts.AlertUpdater
 import com.kylecorry.preparedness_feed.infrastructure.persistence.AlertRepo
 
 
-fun Alerts(config: ViewAttributes.() -> Unit) = Component(config) {
+fun Alerts() = Component {
     val (alerts, setAlerts) = useState(emptyList<Alert>())
     val (loading, setLoading) = useState(false)
     val (progress, setProgress) = useState(0f)

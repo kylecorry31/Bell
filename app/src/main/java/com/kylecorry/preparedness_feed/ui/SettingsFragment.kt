@@ -4,9 +4,7 @@ import android.os.Bundle
 import com.kylecorry.andromeda.core.system.Resources
 import com.kylecorry.andromeda.fragments.AndromedaPreferenceFragment
 import com.kylecorry.preparedness_feed.R
-import dagger.hilt.android.AndroidEntryPoint
 
-@AndroidEntryPoint
 class SettingsFragment : AndromedaPreferenceFragment() {
 
     private val navigationMap = mapOf<Int, Int>(

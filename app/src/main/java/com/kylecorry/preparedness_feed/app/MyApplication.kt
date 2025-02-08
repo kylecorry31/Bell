@@ -3,9 +3,7 @@ package com.kylecorry.preparedness_feed.app
 import android.app.Application
 import com.kylecorry.andromeda.preferences.PreferenceMigration
 import com.kylecorry.andromeda.preferences.PreferenceMigrator
-import dagger.hilt.android.HiltAndroidApp
 
-@HiltAndroidApp
 class MyApplication : Application() {
 
     override fun onCreate() {

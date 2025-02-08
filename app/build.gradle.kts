@@ -6,7 +6,6 @@ import java.time.LocalDate
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id("com.google.dagger.hilt.android")
     id("com.google.devtools.ksp")
     id("kotlin-parcelize")
 }
@@ -122,14 +121,6 @@ dependencies {
     // Jsoup
     implementation(libs.jsoup)
 
-    // Hilt
-    implementation(libs.hilt.android)
-    ksp(libs.hilt.android.compiler)
-
-    // Hilt for Jetpack components
-    implementation(libs.androidx.hilt.work)
-    ksp(libs.androidx.hilt.compiler)
-
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -139,17 +130,4 @@ dependencies {
     testImplementation(libs.junit.jupiter.params)
     testRuntimeOnly(libs.junit.jupiter.engine)
     testImplementation(libs.mockito.kotlin)
-}
-
-// This is a workaround to get viewbinding to work with ksp + hilt (https://github.com/google/dagger/issues/4097)
-androidComponents {
-    onVariants(selector().all()) { variant ->
-        afterEvaluate {
-            project.tasks.getByName("ksp" + variant.name.capitalized() + "Kotlin") {
-                val dataBindingTask =
-                    project.tasks.getByName("dataBindingGenBaseClasses" + variant.name.capitalized()) as DataBindingGenBaseClassesTask
-                (this as AbstractKotlinCompileTool<*>).setSource(dataBindingTask.sourceOutFolder)
-            }
-        }
-    }
 }

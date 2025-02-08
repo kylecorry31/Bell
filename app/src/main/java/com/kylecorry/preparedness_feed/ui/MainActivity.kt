@@ -2,28 +2,21 @@ package com.kylecorry.preparedness_feed.ui
 
 import android.content.Intent
 import android.content.res.Configuration
-import android.graphics.Color
 import android.os.Bundle
 import android.view.ViewGroup
-import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updateLayoutParams
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
-import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.kylecorry.andromeda.core.system.Resources
 import com.kylecorry.andromeda.core.tryOrNothing
 import com.kylecorry.andromeda.fragments.AndromedaActivity
 import com.kylecorry.andromeda.fragments.ColorTheme
 import com.kylecorry.preparedness_feed.R
 import com.kylecorry.preparedness_feed.app.NavigationUtils.setupWithNavController
 import com.kylecorry.preparedness_feed.databinding.ActivityMainBinding
-import dagger.hilt.android.AndroidEntryPoint
 
-@AndroidEntryPoint
 class MainActivity : AndromedaActivity() {
 
     private var _binding: ActivityMainBinding? = null
@@ -33,18 +26,9 @@ class MainActivity : AndromedaActivity() {
     private val permissions = mutableListOf<String>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
-//        ExceptionHandler.initialize(this)
+        ExceptionHandler.initialize(this)
         setColorTheme(ColorTheme.System, true)
-        enableEdgeToEdge(
-            navigationBarStyle = if (isDarkTheme()) {
-                SystemBarStyle.dark(Resources.androidBackgroundColorSecondary(this))
-            } else {
-                SystemBarStyle.light(
-                    Resources.androidBackgroundColorSecondary(this),
-                    Color.BLACK
-                )
-            }
-        )
+        enableEdgeToEdge()
 
         super.onCreate(savedInstanceState)
 
@@ -52,6 +36,10 @@ class MainActivity : AndromedaActivity() {
         setContentView(binding.root)
 
         binding.bottomNavigation.setupWithNavController(findNavController(), false)
+
+        findNavController().addOnDestinationChangedListener { _, _, _ ->
+            updateBottomNavigationSelection()
+        }
 
         bindLayoutInsets()
 
@@ -96,9 +84,8 @@ class MainActivity : AndromedaActivity() {
             val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.updateLayoutParams<ViewGroup.MarginLayoutParams> {
                 topMargin = insets.top
-                bottomMargin = insets.bottom
             }
-            WindowInsetsCompat.CONSUMED
+            windowInsets
         }
     }
 
@@ -109,5 +96,13 @@ class MainActivity : AndromedaActivity() {
     private fun isDarkTheme(): Boolean {
         return resources.configuration.uiMode and
                 Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
+    }
+
+    private fun updateBottomNavigationSelection() {
+        lastKnownFragment = getFragment()?.javaClass?.simpleName
+    }
+
+    companion object {
+        var lastKnownFragment: String? = null
     }
 }

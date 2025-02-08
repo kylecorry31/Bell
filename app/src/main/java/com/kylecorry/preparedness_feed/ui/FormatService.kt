@@ -1,14 +1,12 @@
 package com.kylecorry.preparedness_feed.ui
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.text.format.DateUtils
-import dagger.hilt.android.qualifiers.ApplicationContext
 import java.time.ZonedDateTime
-import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
-class FormatService @Inject constructor(@ApplicationContext private val context: Context) {
+
+class FormatService private constructor(private val context: Context) {
     fun formatDate(
         date: ZonedDateTime,
         includeWeekDay: Boolean = true,
@@ -21,4 +19,16 @@ class FormatService @Inject constructor(@ApplicationContext private val context:
         )
     }
 
+    companion object {
+        @SuppressLint("StaticFieldLeak")
+        private var instance: FormatService? = null
+
+        @Synchronized
+        fun getInstance(context: Context): FormatService {
+            if (instance == null) {
+                instance = FormatService(context.applicationContext)
+            }
+            return instance!!
+        }
+    }
 }
