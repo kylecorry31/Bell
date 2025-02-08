@@ -20,7 +20,7 @@ class Gemini(context: Context, private val apiKey: String) {
         val url =
             "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=$apiKey"
 
-        val prompt = "Write a concise summary of the text content of the following:\n\n$text"
+        val prompt = "Write a concise summary of the text content of the following. It must be under 4 sentences:\n\n$text"
 
         val contents = JsonConvert.toJson(GeminiInput(listOf(GeminiContent(listOf(GeminiPart(prompt))))))
 
