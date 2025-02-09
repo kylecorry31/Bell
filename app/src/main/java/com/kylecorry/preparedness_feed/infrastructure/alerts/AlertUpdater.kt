@@ -5,6 +5,7 @@ import com.kylecorry.andromeda.core.tryOrDefault
 import com.kylecorry.preparedness_feed.domain.Alert
 import com.kylecorry.preparedness_feed.infrastructure.internet.WebPageDownloader
 import com.kylecorry.preparedness_feed.infrastructure.persistence.AlertRepo
+import com.kylecorry.preparedness_feed.infrastructure.persistence.AlertRepo.Companion.DAYS_TO_KEEP_ALERTS
 import com.kylecorry.preparedness_feed.infrastructure.persistence.UserPreferences
 import com.kylecorry.preparedness_feed.infrastructure.summarization.Gemini
 import com.kylecorry.preparedness_feed.infrastructure.utils.ParallelCoroutineRunner
@@ -26,7 +27,7 @@ class AlertUpdater(private val context: Context) {
 
         val alerts = repo.getAll()
 
-        val minTime = ZonedDateTime.now().minusDays(7)
+        val minTime = ZonedDateTime.now().minusDays(DAYS_TO_KEEP_ALERTS)
 
         // TODO: Download alerts in parallel
         val sources = listOf(
