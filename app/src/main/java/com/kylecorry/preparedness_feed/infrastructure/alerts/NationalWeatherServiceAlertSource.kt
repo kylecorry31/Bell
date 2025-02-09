@@ -15,7 +15,11 @@ class NationalWeatherServiceAlertSource(context: Context, private val area: Stri
     override fun postProcessAlerts(alerts: List<Alert>): List<Alert> {
         return alerts.map {
             it.copy(
-                type = AlertType.Weather,
+                type = if (it.title.lowercase().contains("red flag")) {
+                    AlertType.Fire
+                } else {
+                    AlertType.Weather
+                },
                 level = AlertLevel.entries.firstOrNull { entry ->
                     it.title.replace("Statement", "Advisory")
                         .contains(entry.name, ignoreCase = true)
