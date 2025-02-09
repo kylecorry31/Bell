@@ -8,9 +8,9 @@ import com.kylecorry.preparedness_feed.infrastructure.parsers.DateTimeParser
 import java.time.ZonedDateTime
 
 class USGSEarthquakeAlertSource(context: Context) :
-    AtomAlertSource(context, "category[label=Magnitude][term]") {
+    AtomAlertSource(context, "category[label=Magnitude][term]", "title + summary") {
 
-        private val eventTimeRegex = Regex("<dt>Time</dt><dd>([^<]*)</dd>")
+    private val eventTimeRegex = Regex("<dt>Time</dt><dd>([^<]*)</dd>")
 
     override fun getUrl(since: ZonedDateTime): String {
         return "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/significant_day.atom"
@@ -21,12 +21,21 @@ class USGSEarthquakeAlertSource(context: Context) :
             val eventTime = eventTimeRegex.find(it.summary)?.groupValues?.get(1) ?: ""
             val parsedTime = DateTimeParser.parse(eventTime) ?: it.publishedDate
 
+            val originalTitle = it.summary.substringBefore("\n\n")
+
+            val location = if (originalTitle.contains(" of ")) {
+                "near ${originalTitle.substringAfter(" of ")}"
+            } else {
+                ""
+            }
+
             it.copy(
                 type = AlertType.Earthquake,
                 level = AlertLevel.Event,
-                title = "${it.title} Earthquake",
+                title = "${it.title} Earthquake $location".trim(),
                 publishedDate = parsedTime,
-                sourceSystem = getSystemName()
+                sourceSystem = getSystemName(),
+                useLinkForSummary = false
             )
         }
     }

@@ -84,6 +84,11 @@ abstract class AtomAlertSource(
     }
 
     private fun getTextBySelector(xml: XMLNode, selector: String): String? {
+        if (selector.contains(" + ")) {
+            val parts = selector.split(" + ").mapNotNull { getTextBySelector(xml, it) }
+            return parts.joinToString("\n\n")
+        }
+
         val tag = selector.substringBefore("[")
         var matches = findAll(xml, tag)
 

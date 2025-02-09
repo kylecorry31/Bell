@@ -61,11 +61,11 @@ class AlertUpdater(private val context: Context) {
         }
 
         // If the source system is active only and an existing alert is not in the new alerts, remove it
-        sources.filter { it.isActiveOnly() }.forEach { source ->
-            val toDelete =
-                alerts.filter { alert -> newAlerts.none { alert.uniqueId == it.uniqueId && source.getSystemName() == it.sourceSystem } }
-            toDelete.forEach { repo.delete(it) }
-        }
+//        sources.filter { it.isActiveOnly() }.forEach { source ->
+//            val toDelete =
+//                alerts.filter { alert -> newAlerts.none { alert.uniqueId == it.uniqueId && source.getSystemName() == it.sourceSystem } }
+//            toDelete.forEach { repo.delete(it) }
+//        }
 
         setProgress(0f)
         setLoadingMessage("summaries")
