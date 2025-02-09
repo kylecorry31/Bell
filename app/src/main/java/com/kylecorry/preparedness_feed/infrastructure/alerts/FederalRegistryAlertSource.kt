@@ -4,8 +4,11 @@ import android.content.Context
 import com.kylecorry.andromeda.json.JsonConvert
 import com.kylecorry.luna.coroutines.onIO
 import com.kylecorry.preparedness_feed.domain.Alert
+import com.kylecorry.preparedness_feed.domain.AlertLevel
 import com.kylecorry.preparedness_feed.domain.AlertSource
+import com.kylecorry.preparedness_feed.domain.AlertType
 import com.kylecorry.preparedness_feed.infrastructure.internet.HttpService
+import com.kylecorry.preparedness_feed.infrastructure.parsers.DateTimeParser
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -35,19 +38,16 @@ class FederalRegistryAlertSource(context: Context) : AlertSource {
         val response = http.get(url)
         val json = JsonConvert.fromJson<DocumentsResponse>(response) ?: return@onIO emptyList()
 
-        json.results.map {
+        json.results.mapNotNull {
 
-            val date = try {
-                LocalDate.parse(it.signing_date).atStartOfDay(ZoneId.of("America/New_York"))
-            } catch (e: Exception) {
-                ZonedDateTime.parse(it.signing_date)
-            }
+            val date = DateTimeParser.parse(it.signing_date, ZoneId.of("America/New_York"))
+                ?: return@mapNotNull null
 
             Alert(
                 id = 0,
                 title = it.title,
-                source = "Federal Register",
-                type = "Executive Order",
+                type = AlertType.Government,
+                level = AlertLevel.Order,
                 link = it.raw_text_url,
                 uniqueId = it.executive_order_number,
                 publishedDate = date,

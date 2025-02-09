@@ -3,19 +3,20 @@ package com.kylecorry.preparedness_feed.infrastructure.alerts
 import android.content.Context
 import com.kylecorry.andromeda.json.JsonConvert
 import com.kylecorry.preparedness_feed.domain.Alert
+import com.kylecorry.preparedness_feed.domain.AlertLevel
 import com.kylecorry.preparedness_feed.domain.AlertSource
 import com.kylecorry.preparedness_feed.domain.AlertType
 import com.kylecorry.preparedness_feed.infrastructure.internet.HttpService
+import com.kylecorry.preparedness_feed.infrastructure.parsers.DateTimeParser
 import java.time.ZonedDateTime
 
 class SWPCAlertSource(context: Context) : AlertSource {
 
     private val http = HttpService(context)
 
-    private val serialNumberRegex = Regex("Serial Number:\\s([0-9]+)")
     private val titleRegex = Regex("(WARNING|ALERT|SUMMARY|WATCH):\\s(.*)")
 
-    class SWPCResponse(val product_id: String, val issue_datetime: String, val message: String)
+    class SWPCResponse(val issue_datetime: String, val message: String)
 
     override suspend fun getAlerts(since: ZonedDateTime): List<Alert> {
         val url = "https://services.swpc.noaa.gov/products/alerts.json"
@@ -29,17 +30,17 @@ class SWPCAlertSource(context: Context) : AlertSource {
             val titleMatch = titleRegex.find(it.message)
             val title = titleMatch?.groupValues?.get(2) ?: ""
 
-            val serialNumberMatch = serialNumberRegex.find(it.message)
-            val serialNumber = serialNumberMatch?.groupValues?.get(1) ?: ""
+            // TODO: High KP watch / warnings
 
+            // TODO: Find the last mentioned date in the message and set that + 1 day as the expiration date for the geomagnetic storm watches
             Alert(
                 0,
                 title,
-                "Space Weather",
-                AlertType.Watch.name,
+                AlertType.SpaceWeather,
+                AlertLevel.Watch,
                 "https://www.swpc.noaa.gov/",
-                serialNumber,
-                ZonedDateTime.parse(it.issue_datetime.replace(" ", "T") + "Z"),
+                "geomagnetic-storm", // Only one geomagnetic storm alert should be shown
+                DateTimeParser.parse(it.issue_datetime.replace(" ", "T") + "Z") ?: return@mapNotNull null,
                 it.message,
                 useLinkForSummary = false
             )

@@ -3,12 +3,11 @@ package com.kylecorry.preparedness_feed.infrastructure.alerts
 import com.kylecorry.luna.coroutines.onIO
 import com.kylecorry.preparedness_feed.domain.Alert
 import com.kylecorry.preparedness_feed.domain.AlertSource
+import com.kylecorry.preparedness_feed.domain.AlertLevel
 import com.kylecorry.preparedness_feed.domain.AlertType
+import com.kylecorry.preparedness_feed.infrastructure.parsers.DateTimeParser
 import org.jsoup.Jsoup
-import java.time.LocalDateTime
-import java.time.ZoneId
 import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
 
 class CDCAlertSource : AlertSource {
 
@@ -37,13 +36,13 @@ class CDCAlertSource : AlertSource {
             val date = dateElement.text()
             val link = titleElement.attr("href")
 
-            val parsedDate = parseDate(date) ?: return@mapNotNull null
+            val parsedDate = DateTimeParser.parse(date) ?: return@mapNotNull null
 
             Alert(
                 0,
                 title,
-                "Health",
-                AlertType.Warning.name,
+                AlertType.Health,
+                AlertLevel.Warning,
                 "https://www.cdc.gov$link",
                 link.split("/").last().replace(".html", ""),
                 parsedDate,
@@ -53,20 +52,4 @@ class CDCAlertSource : AlertSource {
 
     }
 
-    private fun parseDate(date: String): ZonedDateTime? {
-        // "%m/%d/%Y %I:%M %p" OR "%m/%d/%Y, %I:%M %p"
-        val formats = listOf("MM/dd/yyyy h:mm a", "MM/dd/yyyy, h:mm a")
-        for (format in formats) {
-            var dateString = date
-            while (dateString.length > format.length) {
-                try {
-                    return LocalDateTime.parse(dateString, DateTimeFormatter.ofPattern(format))
-                        .atZone(ZoneId.systemDefault())
-                } catch (e: Exception) {
-                    dateString = dateString.drop(1)
-                }
-            }
-        }
-        return null
-    }
 }

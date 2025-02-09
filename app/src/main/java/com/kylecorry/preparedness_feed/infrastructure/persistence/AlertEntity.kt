@@ -4,6 +4,8 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.kylecorry.preparedness_feed.domain.Alert
+import com.kylecorry.preparedness_feed.domain.AlertLevel
+import com.kylecorry.preparedness_feed.domain.AlertType
 import java.time.Instant
 import java.time.ZoneId
 
@@ -17,9 +19,9 @@ data class AlertEntity(
     @ColumnInfo(name = "title")
     var title: String,
     @ColumnInfo(name = "source")
-    var source: String,
-    @ColumnInfo(name = "type")
     var type: String,
+    @ColumnInfo(name = "type")
+    var level: String,
     @ColumnInfo(name = "link")
     var link: String,
     @ColumnInfo(name = "unique_id")
@@ -33,8 +35,8 @@ data class AlertEntity(
         return Alert(
             id,
             title,
-            source,
-            type,
+            AlertType.entries.find { it.name == type } ?: AlertType.Other,
+            AlertLevel.entries.find { it.name == level } ?: AlertLevel.Other,
             link,
             uniqueId,
             publishedDate.atZone(ZoneId.systemDefault()),
@@ -47,8 +49,8 @@ data class AlertEntity(
             return AlertEntity(
                 alert.id,
                 alert.title,
-                alert.source,
-                alert.type,
+                alert.type.name,
+                alert.level.name,
                 alert.link,
                 alert.uniqueId,
                 alert.publishedDate.toInstant(),
