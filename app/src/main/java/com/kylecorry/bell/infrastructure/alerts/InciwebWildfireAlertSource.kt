@@ -13,6 +13,8 @@ class InciwebWildfireAlertSource(context: Context) : RssAlertSource(context) {
     private val stateRegex = Regex("State: (\\w+)")
     private val fireNameRegex = Regex("[A-Z0-9]+\\s(.+)\\sFire")
 
+    private val containedText = "This page will no longer be updated"
+
     override fun getUrl(): String {
         return "https://inciweb.wildfire.gov/incidents/rss.xml"
     }
@@ -24,7 +26,11 @@ class InciwebWildfireAlertSource(context: Context) : RssAlertSource(context) {
     override fun postProcessAlerts(alerts: List<Alert>): List<Alert> {
         return alerts.mapNotNull {
 
-            if (!it.summary.contains("type of incident is Wildfire")) {
+            if (!it.summary.contains("type of incident is Wildfire", true)) {
+                return@mapNotNull null
+            }
+
+            if (it.summary.contains(containedText, true)) {
                 return@mapNotNull null
             }
 
