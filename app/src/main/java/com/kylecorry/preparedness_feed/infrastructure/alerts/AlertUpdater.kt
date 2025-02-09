@@ -6,6 +6,7 @@ import com.kylecorry.preparedness_feed.domain.Alert
 import com.kylecorry.preparedness_feed.infrastructure.persistence.AlertRepo
 import com.kylecorry.preparedness_feed.infrastructure.persistence.UserPreferences
 import com.kylecorry.preparedness_feed.infrastructure.summarization.Gemini
+import com.kylecorry.preparedness_feed.infrastructure.utils.ParallelCoroutineRunner
 import java.time.ZonedDateTime
 
 class AlertUpdater(private val context: Context) {
@@ -36,16 +37,20 @@ class AlertUpdater(private val context: Context) {
             USGSVolcanoAlertSource(),
         )
 
-        val allAlerts = mutableListOf<Alert>()
+        var completedCount = 0
+        val totalCount = sources.size
+        val lock = Any()
 
-        for (index in sources.indices) {
-            setProgress(index.toFloat() / sources.size)
-            val source = sources[index]
-            allAlerts.addAll(source.getAlerts(minTime))
-        }
-
-        // Remove all old alerts
-        allAlerts.removeIf { it.publishedDate.isBefore(minTime) }
+        val runner = ParallelCoroutineRunner()
+        val allAlerts = runner.map(sources) {
+            val sourceAlerts =
+                it.getAlerts(minTime).filter { alert -> alert.publishedDate.isAfter(minTime) }
+            synchronized(lock) {
+                completedCount++
+                setProgress(completedCount.toFloat() / totalCount)
+            }
+            sourceAlerts
+        }.flatten()
 
         val newAlerts = allAlerts.filter { alert ->
             alerts.none { it.uniqueId == alert.uniqueId && it.sourceSystem == alert.sourceSystem }
