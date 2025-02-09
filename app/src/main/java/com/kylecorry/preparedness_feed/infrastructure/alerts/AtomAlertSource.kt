@@ -12,7 +12,8 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 
-abstract class AtomAlertSource(context: Context) : AlertSource {
+abstract class AtomAlertSource(context: Context, private val titleTag: String = "title") :
+    AlertSource {
 
     private val http = HttpService(context)
 
@@ -26,7 +27,7 @@ abstract class AtomAlertSource(context: Context) : AlertSource {
         )
         val xml = XMLConvert.parse(response)
         val items = findAll(xml, "entry").map {
-            val title = find(it, "title")?.text ?: ""
+            val title = find(it, titleTag)?.text ?: ""
             val link = find(it, "link")?.text ?: ""
             val guid = find(it, "id")?.text ?: ""
             val pubDate = find(it, "updated")?.text ?: ""

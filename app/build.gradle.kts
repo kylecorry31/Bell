@@ -28,7 +28,6 @@ android {
         generateLocaleConfig = true
     }
     buildFeatures {
-        viewBinding = true
         buildConfig = true
     }
     buildTypes {
