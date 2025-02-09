@@ -14,6 +14,9 @@ data class Alert(
     val summary: String,
     val useLinkForSummary: Boolean = true,
     val shouldSummarize: Boolean = true,
-    // TODO: Save these fields
     val expirationDate: ZonedDateTime? = null,
-)
+){
+    fun isExpired(time: ZonedDateTime = ZonedDateTime.now()): Boolean {
+        return expirationDate?.isBefore(time) ?: false
+    }
+}

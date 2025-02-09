@@ -2,20 +2,21 @@ package com.kylecorry.preparedness_feed.infrastructure.alerts
 
 import android.content.Context
 import com.kylecorry.andromeda.xml.XMLConvert
-import com.kylecorry.andromeda.xml.XMLNode
 import com.kylecorry.preparedness_feed.domain.Alert
 import com.kylecorry.preparedness_feed.domain.AlertLevel
 import com.kylecorry.preparedness_feed.domain.AlertSource
 import com.kylecorry.preparedness_feed.domain.AlertType
 import com.kylecorry.preparedness_feed.infrastructure.internet.HttpService
 import com.kylecorry.preparedness_feed.infrastructure.parsers.DateTimeParser
+import com.kylecorry.preparedness_feed.infrastructure.utils.XmlUtils
 import java.time.ZonedDateTime
 
 
 abstract class AtomAlertSource(
     context: Context,
     private val titleSelector: String = "title",
-    private val summarySelector: String = "summary"
+    private val summarySelector: String = "summary",
+    private val linkSelector: String = "link"
 ) :
     AlertSource {
 
@@ -30,13 +31,17 @@ abstract class AtomAlertSource(
             )
         )
         val xml = XMLConvert.parse(response)
-        val items = findAll(xml, "entry").mapNotNull {
-            val title = getTextBySelector(it, titleSelector) ?: ""
-            val linkElement = find(it, "link")
-            val link = linkElement?.attributes?.get("href") ?: linkElement?.text ?: ""
-            val guid = find(it, "id")?.text ?: ""
-            val pubDate = find(it, "updated")?.text ?: ""
-            val summary = getTextBySelector(it, summarySelector) ?: ""
+        val items = XmlUtils.findAll(xml, "entry").mapNotNull {
+            val title = XmlUtils.getTextBySelector(it, titleSelector) ?: ""
+            val link = XmlUtils.getTextBySelector(it, linkSelector)
+                ?: if (!linkSelector.contains("href")) {
+                    XmlUtils.getTextBySelector(it, "$linkSelector[href]") ?: ""
+                } else {
+                    ""
+                }
+            val guid = XmlUtils.find(it, "id")?.text ?: ""
+            val pubDate = XmlUtils.find(it, "updated")?.text ?: ""
+            val summary = XmlUtils.getTextBySelector(it, summarySelector) ?: ""
             val pubDateTimestamp = DateTimeParser.parse(pubDate) ?: return@mapNotNull null
             Alert(
                 id = 0,
@@ -59,59 +64,5 @@ abstract class AtomAlertSource(
         return alerts
     }
 
-    private fun findAll(xml: XMLNode, tag: String): List<XMLNode> {
-        val matches = mutableListOf<XMLNode>()
-        if (xml.tag.lowercase() == tag.lowercase()) {
-            matches.add(xml)
-        }
-        for (child in xml.children) {
-            matches.addAll(findAll(child, tag))
-        }
-        return matches
-    }
 
-    private fun find(xml: XMLNode, tag: String): XMLNode? {
-        if (xml.tag.lowercase() == tag.lowercase()) {
-            return xml
-        }
-        for (child in xml.children) {
-            val match = find(child, tag)
-            if (match != null) {
-                return match
-            }
-        }
-        return null
-    }
-
-    private fun getTextBySelector(xml: XMLNode, selector: String): String? {
-        if (selector.contains(" + ")) {
-            val parts = selector.split(" + ").mapNotNull { getTextBySelector(xml, it) }
-            return parts.joinToString("\n\n")
-        }
-
-        val tag = selector.substringBefore("[")
-        var matches = findAll(xml, tag)
-
-        var remainingSelector = if (selector == tag) {
-            ""
-        } else {
-            selector
-        }
-        while (matches.isNotEmpty() && remainingSelector.isNotEmpty()) {
-            val attribute = remainingSelector.substringAfter("[").substringBefore("]")
-            if (attribute.contains("=")) {
-                val parts = attribute.split("=")
-                val key = parts[0]
-                val value = parts[1]
-                matches = matches.filter { it.attributes[key] == value }
-                remainingSelector = remainingSelector.substringAfter("]")
-            } else {
-                // This is a stop condition
-                return matches.firstOrNull()?.attributes?.get(attribute)
-            }
-        }
-
-        return matches.firstOrNull()?.text
-
-    }
 }

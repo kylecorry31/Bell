@@ -17,6 +17,7 @@ import com.kylecorry.preparedness_feed.domain.AlertLevel
 import com.kylecorry.preparedness_feed.ui.FormatService
 import com.kylecorry.preparedness_feed.ui.mappers.AlertLevelMapper
 import com.kylecorry.preparedness_feed.ui.mappers.AlertTypeMapper
+import java.time.ZonedDateTime
 
 class AlertListAttributes : ViewAttributes() {
     var alerts: List<Alert> = emptyList()
@@ -31,41 +32,42 @@ fun AlertList(config: AlertListAttributes.() -> Unit) = Component(config) { attr
 
     val listItems = useMemo(attrs.alerts, attrs.onDelete, formatter, context) {
         val secondaryTextColor = Resources.androidTextColorSecondary(context)
-        attrs.alerts.filter { it.level != AlertLevel.Noise }.map {
-            ListItem(
-                it.id,
-                it.title,
-                formatter.formatDateTime(it.publishedDate),
-                icon = ResourceListIcon(
-                    AlertTypeMapper.getIcon(it.type),
-                    secondaryTextColor
-                ),
-                tags = listOf(
-                    ListItemTag(it.level.name, null, AlertLevelMapper.getColor(it.level)),
-                ),
-                longClickAction = {
-                    attrs.onDelete?.invoke(it)
-                }
-            ) {
-                val content =
-                    buildSpannedString {
-                        appendLine(formatter.formatDateTime(it.publishedDate))
-                        appendLine()
-                        appendLine(it.link.trimEnd('/'))
-                        appendLine()
-                        appendLine(formatter.formatMarkdown(it.summary))
-                    }.toSpannable()
-                LinkifyCompat.addLinks(content, Linkify.WEB_URLS)
-
-                Alerts.dialog(
-                    context,
+        attrs.alerts.filter { it.level != AlertLevel.Noise && !it.isExpired() }
+            .map {
+                ListItem(
+                    it.id,
                     it.title,
-                    content,
-                    allowLinks = true,
-                    cancelText = null
-                )
+                    formatter.formatDateTime(it.publishedDate),
+                    icon = ResourceListIcon(
+                        AlertTypeMapper.getIcon(it.type),
+                        secondaryTextColor
+                    ),
+                    tags = listOf(
+                        ListItemTag(it.level.name, null, AlertLevelMapper.getColor(it.level)),
+                    ),
+                    longClickAction = {
+                        attrs.onDelete?.invoke(it)
+                    }
+                ) {
+                    val content =
+                        buildSpannedString {
+                            appendLine(formatter.formatDateTime(it.publishedDate))
+                            appendLine()
+                            appendLine(it.link.trimEnd('/'))
+                            appendLine()
+                            appendLine(formatter.formatMarkdown(it.summary))
+                        }.toSpannable()
+                    LinkifyCompat.addLinks(content, Linkify.WEB_URLS)
+
+                    Alerts.dialog(
+                        context,
+                        it.title,
+                        content,
+                        allowLinks = true,
+                        cancelText = null
+                    )
+                }
             }
-        }
     }
 
     AndromedaList {

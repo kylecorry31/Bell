@@ -22,7 +22,4 @@ interface AlertDao {
 
     @Query("DELETE FROM alerts WHERE published_date < :time")
     suspend fun deleteOlderThan(time: Instant)
-
-    @Query("DELETE FROM alerts WHERE expiration_date IS NOT NULL AND expiration_date < :time")
-    suspend fun deleteExpired(time: Instant)
 }

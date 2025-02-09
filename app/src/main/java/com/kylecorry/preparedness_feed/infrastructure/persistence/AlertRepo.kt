@@ -24,7 +24,6 @@ class AlertRepo private constructor(context: Context) {
     }
 
     suspend fun cleanup() = onIO {
-        dao.deleteExpired(Instant.now())
         dao.deleteOlderThan(Instant.now().minus(Duration.ofDays(DAYS_TO_KEEP_ALERTS)))
     }
 

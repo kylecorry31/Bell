@@ -65,7 +65,9 @@ class SWPCAlertSource(context: Context) : AlertSource {
                 useLinkForSummary = false
             )
         }
-            .filter { it.publishedDate.isAfter(since) && it.expirationDate?.isAfter(ZonedDateTime.now()) != false }
+            .filter { it.publishedDate.isAfter(since) }
+            .sortedByDescending { it.publishedDate }
+            .distinctBy { it.uniqueId }
     }
 
     override fun getSystemName(): String {

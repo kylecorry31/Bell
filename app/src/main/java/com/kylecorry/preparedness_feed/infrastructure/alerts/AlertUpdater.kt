@@ -29,7 +29,6 @@ class AlertUpdater(private val context: Context) {
 
         val minTime = ZonedDateTime.now().minusDays(DAYS_TO_KEEP_ALERTS)
 
-        // TODO: Download alerts in parallel
         val sources = listOf(
             NationalWeatherServiceAlertSource(context, "RI"),
             WhiteHousePresidentalActionsAlertSource(context),
@@ -40,6 +39,8 @@ class AlertUpdater(private val context: Context) {
             USGSVolcanoAlertSource(),
             CongressionalBillsAlertSource(context),
             InciwebWildfireAlertSource(context),
+            NationalTsunamiAlertSource(context),
+            PacificTsunamiAlertSource(context),
         )
 
         var completedCount = 0
