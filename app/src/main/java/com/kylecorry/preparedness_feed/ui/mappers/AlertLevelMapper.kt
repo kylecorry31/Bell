@@ -12,8 +12,6 @@ object AlertLevelMapper {
             AlertLevel.Update -> AppColor.Gray.color
             AlertLevel.Event -> AppColor.Purple.color
             AlertLevel.Announcement -> AppColor.Gray.color
-            AlertLevel.Order -> AppColor.Gray.color
-            AlertLevel.Law -> AppColor.Gray.color
             AlertLevel.Other -> AppColor.Gray.color
             AlertLevel.Noise -> AppColor.Gray.color
         }

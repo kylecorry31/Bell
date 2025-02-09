@@ -16,7 +16,7 @@ class ExecutiveOrderAlertSource(context: Context) : RssAlertSource(context) {
         return alerts.map {
             it.copy(
                 type = AlertType.Government,
-                level = AlertLevel.Order,
+                level = AlertLevel.Announcement,
                 sourceSystem = getSystemName()
             )
         }.distinctBy { it.title }

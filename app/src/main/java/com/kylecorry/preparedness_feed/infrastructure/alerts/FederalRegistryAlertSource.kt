@@ -9,7 +9,6 @@ import com.kylecorry.preparedness_feed.domain.AlertSource
 import com.kylecorry.preparedness_feed.domain.AlertType
 import com.kylecorry.preparedness_feed.infrastructure.internet.HttpService
 import com.kylecorry.preparedness_feed.infrastructure.parsers.DateTimeParser
-import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZonedDateTime
 
@@ -47,7 +46,7 @@ class FederalRegistryAlertSource(context: Context) : AlertSource {
                 id = 0,
                 title = it.title,
                 type = AlertType.Government,
-                level = AlertLevel.Order,
+                level = AlertLevel.Announcement,
                 link = it.raw_text_url,
                 uniqueId = it.executive_order_number,
                 publishedDate = date,
