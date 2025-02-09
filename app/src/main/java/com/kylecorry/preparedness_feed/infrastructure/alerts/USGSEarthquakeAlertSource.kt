@@ -5,6 +5,7 @@ import com.kylecorry.preparedness_feed.domain.Alert
 import com.kylecorry.preparedness_feed.domain.AlertLevel
 import com.kylecorry.preparedness_feed.domain.AlertType
 import com.kylecorry.preparedness_feed.infrastructure.parsers.DateTimeParser
+import org.jsoup.Jsoup
 import java.time.ZonedDateTime
 
 class USGSEarthquakeAlertSource(context: Context) :
@@ -29,13 +30,22 @@ class USGSEarthquakeAlertSource(context: Context) :
                 ""
             }
 
+            val html = originalTitle + "\n\n" + Jsoup.parse(
+                it.summary.replace(
+                    "</dd>",
+                    "</dd><br /><br />"
+                ).replace("</dt>", ":&nbsp;</dt>").replace("</p>", "</p><br/><br/>")
+                    .replace("</a>", "</a><br /> <br />").substringAfter("\n\n")
+            ).wholeText()
+
             it.copy(
                 type = AlertType.Earthquake,
                 level = AlertLevel.Event,
                 title = "${it.title} Earthquake $location".trim(),
                 publishedDate = parsedTime,
                 sourceSystem = getSystemName(),
-                useLinkForSummary = false
+                useLinkForSummary = false,
+                summary = html
             )
         }
     }

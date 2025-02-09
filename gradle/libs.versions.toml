@@ -58,6 +58,7 @@ andromeda-preferences = { module = "com.kylecorry.andromeda:preferences", versio
 andromeda-views = { module = "com.kylecorry.andromeda:views", version.ref = "andromedaVersion" }
 andromeda-xml = { module = "com.kylecorry.andromeda:xml", version.ref = "andromedaVersion" }
 andromeda-json = { module = "com.kylecorry.andromeda:json", version.ref = "andromedaVersion" }
+andromeda-markdown = { module = "com.kylecorry.andromeda:markdown", version.ref = "andromedaVersion" }
 desugar_jdk_libs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugar_jdk_libs" }
 flexbox = { module = "com.google.android.flexbox:flexbox", version.ref = "flexbox" }
 junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit5Version" }

@@ -17,7 +17,8 @@ class NationalWeatherServiceAlertSource(context: Context, private val area: Stri
             it.copy(
                 type = AlertType.Weather,
                 level = AlertLevel.entries.firstOrNull { entry ->
-                    it.title.contains(entry.name, ignoreCase = true)
+                    it.title.replace("Statement", "Advisory")
+                        .contains(entry.name, ignoreCase = true)
                 } ?: AlertLevel.Other,
                 useLinkForSummary = false,
                 link = "https://alerts.weather.gov/search?area=$area",

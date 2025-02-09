@@ -47,7 +47,7 @@ fun AlertList(config: AlertListAttributes.() -> Unit) = Component(config) { attr
                         appendLine()
                         appendLine(it.link.trimEnd('/'))
                         appendLine()
-                        appendLine(it.summary)
+                        appendLine(formatter.formatMarkdown(it.summary))
                     }.toSpannable()
                 LinkifyCompat.addLinks(content, Linkify.WEB_URLS)
 

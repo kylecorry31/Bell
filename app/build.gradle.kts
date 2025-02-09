@@ -113,6 +113,7 @@ dependencies {
     implementation(libs.andromeda.views)
     implementation(libs.andromeda.xml)
     implementation(libs.andromeda.json)
+    implementation(libs.andromeda.markdown)
 
     // Volley
     implementation(libs.volley)
