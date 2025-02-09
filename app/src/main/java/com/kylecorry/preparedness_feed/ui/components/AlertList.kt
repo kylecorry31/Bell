@@ -13,6 +13,7 @@ import com.kylecorry.andromeda.views.reactivity.AndromedaViews.AndromedaList
 import com.kylecorry.andromeda.views.reactivity.AndromedaViews.Component
 import com.kylecorry.andromeda.views.reactivity.ViewAttributes
 import com.kylecorry.preparedness_feed.domain.Alert
+import com.kylecorry.preparedness_feed.domain.AlertLevel
 import com.kylecorry.preparedness_feed.ui.FormatService
 import com.kylecorry.preparedness_feed.ui.mappers.AlertLevelMapper
 import com.kylecorry.preparedness_feed.ui.mappers.AlertTypeMapper
@@ -29,9 +30,8 @@ fun AlertList(config: AlertListAttributes.() -> Unit) = Component(config) { attr
     }
 
     val listItems = useMemo(attrs.alerts, attrs.onDelete, formatter, context) {
-        val primaryColor = Resources.getAndroidColorAttr(context, android.R.attr.colorPrimary)
         val secondaryTextColor = Resources.androidTextColorSecondary(context)
-        attrs.alerts.map {
+        attrs.alerts.filter { it.level != AlertLevel.Noise }.map {
             ListItem(
                 it.id,
                 it.title,

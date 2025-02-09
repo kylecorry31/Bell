@@ -9,5 +9,6 @@ enum class AlertLevel {
     Announcement, // An announcement
     Order, // A public order
     Law, // A new law
-    Other // Any other type of alert
+    Other, // Any other type of alert
+    Noise // Not something to care about, will be hidden in the UI (added to the DB to prevent re-fetching)
 }

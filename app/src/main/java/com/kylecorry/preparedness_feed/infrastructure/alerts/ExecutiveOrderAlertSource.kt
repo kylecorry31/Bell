@@ -4,6 +4,7 @@ import android.content.Context
 import com.kylecorry.preparedness_feed.domain.Alert
 import com.kylecorry.preparedness_feed.domain.AlertLevel
 import com.kylecorry.preparedness_feed.domain.AlertType
+import org.jsoup.Jsoup
 import java.time.ZonedDateTime
 
 class ExecutiveOrderAlertSource(context: Context) : RssAlertSource(context) {
@@ -27,5 +28,17 @@ class ExecutiveOrderAlertSource(context: Context) : RssAlertSource(context) {
 
     override fun isActiveOnly(): Boolean {
         return false
+    }
+
+    override fun updateFromFullText(alert: Alert, fullText: String): Alert {
+        val html = Jsoup.parse(fullText)
+        val type = html.select(".wp-block-whitehouse-topper__meta--byline").text().trim()
+
+        if (type.lowercase() != "executive order") {
+            return alert.copy(summary = "", shouldSummarize = false, level = AlertLevel.Noise)
+        }
+
+        val content = html.select(".entry-content > p").text()
+        return alert.copy(summary = content)
     }
 }
