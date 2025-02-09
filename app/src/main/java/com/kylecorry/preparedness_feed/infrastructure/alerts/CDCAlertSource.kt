@@ -61,4 +61,19 @@ class CDCAlertSource : AlertSource {
         return false
     }
 
+    override fun updateFromFullText(alert: Alert, fullText: String): Alert {
+        val level = when {
+            fullText.contains("HAN_badge_HEALTH_ADVISORY") -> AlertLevel.Advisory
+            fullText.contains("HAN_badge_HEALTH_UPDATE") -> AlertLevel.Update
+            else -> AlertLevel.Warning
+        }
+
+        val summary = Jsoup.parse(
+            fullText.substringAfter("<strong>Summary</strong>")
+                .substringBefore("<strong>Background</strong>")
+        ).wholeText()
+
+        return alert.copy(level = level, summary = summary)
+    }
+
 }

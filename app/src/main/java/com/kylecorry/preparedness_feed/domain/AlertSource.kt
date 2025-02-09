@@ -6,4 +6,7 @@ interface AlertSource {
     suspend fun getAlerts(since: ZonedDateTime): List<Alert>
     fun getSystemName(): String
     fun isActiveOnly(): Boolean
+    fun updateFromFullText(alert: Alert, fullText: String): Alert {
+        return alert
+    }
 }

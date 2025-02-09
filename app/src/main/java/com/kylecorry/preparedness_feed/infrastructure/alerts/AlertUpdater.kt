@@ -3,6 +3,7 @@ package com.kylecorry.preparedness_feed.infrastructure.alerts
 import android.content.Context
 import com.kylecorry.andromeda.core.tryOrDefault
 import com.kylecorry.preparedness_feed.domain.Alert
+import com.kylecorry.preparedness_feed.infrastructure.internet.WebPageDownloader
 import com.kylecorry.preparedness_feed.infrastructure.persistence.AlertRepo
 import com.kylecorry.preparedness_feed.infrastructure.persistence.UserPreferences
 import com.kylecorry.preparedness_feed.infrastructure.summarization.Gemini
@@ -14,6 +15,7 @@ class AlertUpdater(private val context: Context) {
     private val repo = AlertRepo.getInstance(context)
     private val preferences = UserPreferences(context)
     private val gemini = Gemini(context, preferences.geminiApiKey)
+    private val pageDownloader = WebPageDownloader(context)
 
     suspend fun update(
         setProgress: (Float) -> Unit = {},
@@ -84,17 +86,27 @@ class AlertUpdater(private val context: Context) {
         // Generate summaries and save new/updated alerts
         (newAlerts + updatedAlerts).forEach { alert ->
             setProgress(completedSummaryCount.toFloat() / (newAlerts.size + updatedAlerts.size))
-            val summary = tryOrDefault(alert.summary) {
-                if (!alert.shouldSummarize) {
-                    alert.summary
-                } else if (alert.useLinkForSummary) {
-                    "## AI Summary\n\n${gemini.summarizeUrl(alert.link)}\n\n## Original Summary\n\n${alert.summary}"
+
+            // Load the full text if it should use the link for the summary
+            val fullText = tryOrDefault(alert.summary) {
+                if (alert.useLinkForSummary) {
+                    pageDownloader.download(alert.link)
                 } else {
-                    "## AI Summary\n\n${gemini.summarize(alert.summary)}\n\n## Original Summary\n\n${alert.summary}"
+                    alert.summary
                 }
             }
-            val newAlert = alert.copy(summary = summary)
-            repo.upsert(newAlert)
+
+            val source = sources.find { it.getSystemName() == alert.sourceSystem }
+            val newAlert = source?.updateFromFullText(alert, fullText) ?: alert
+
+            val summary = tryOrDefault(newAlert.summary) {
+                if (!newAlert.shouldSummarize) {
+                    newAlert.summary
+                } else {
+                    "### AI Summary\n\n${gemini.summarize(fullText)}\n\n### Original Summary\n\n${newAlert.summary}"
+                }
+            }
+            repo.upsert(newAlert.copy(summary = summary))
             onAlertsUpdated(repo.getAll())
             completedSummaryCount++
         }

@@ -20,11 +20,14 @@ class Gemini(context: Context, private val apiKey: String) {
     private var requestTimes = mutableListOf<Long>()
 
     suspend fun summarize(text: String): String {
+        // If the text is HTML, extract the text
+        val textContent = Jsoup.parse(text).wholeText()
+
         val url =
             "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=$apiKey"
 
         val prompt =
-            "Write a concise summary of the text content of the following. It must be under 4 sentences:\n\n$text"
+            "Write a concise, high level, one sentence (< 280 characters) summary of following text:\n\n$textContent"
 
         val contents =
             JsonConvert.toJson(GeminiInput(listOf(GeminiContent(listOf(GeminiPart(prompt))))))
@@ -50,23 +53,6 @@ class Gemini(context: Context, private val apiKey: String) {
         }
 
         return response?.candidates?.firstOrNull()?.content?.parts?.firstOrNull()?.text ?: text
-    }
-
-    suspend fun summarizeUrl(url: String): String {
-        val text = http.get(
-            url, headers = mapOf(
-                "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
-            )
-        )
-
-        // If the text is HTML, extract the text
-        val textContent = if (text.contains("<html") || text.contains("<!DOCTYPE")) {
-            Jsoup.parse(text).text()
-        } else {
-            text
-        }
-
-        return summarize(textContent)
     }
 
 }
