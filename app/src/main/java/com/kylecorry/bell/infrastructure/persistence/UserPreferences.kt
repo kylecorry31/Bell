@@ -9,4 +9,6 @@ class UserPreferences(context: Context) {
 
     var geminiApiKey by StringPreference(preferences, "gemini_api_key", "", true)
 
+    var state by StringPreference(preferences, "state", "RI")
+
 }

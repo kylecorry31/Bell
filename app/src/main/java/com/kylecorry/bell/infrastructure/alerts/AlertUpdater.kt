@@ -30,7 +30,7 @@ class AlertUpdater(private val context: Context) {
         val minTime = ZonedDateTime.now().minusDays(DAYS_TO_KEEP_ALERTS)
 
         val sources = listOf(
-            NationalWeatherServiceAlertSource(context, "RI"),
+            NationalWeatherServiceAlertSource(context, preferences.state),
             WhiteHousePresidentalActionsAlertSource(context),
             USGSEarthquakeAlertSource(context),
             USGSWaterAlertSource(context),
