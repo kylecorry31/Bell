@@ -16,6 +16,7 @@ class NationalWeatherServiceAlertSource(context: Context, private val area: Stri
                 source = "National Weather Service",
                 type = "NWS",
                 useLinkForSummary = false,
+                link = "https://alerts.weather.gov/search?area=$area",
                 uniqueId = it.uniqueId.split("/").last().split(".")[6]
             )
         }.sortedByDescending { it.publishedDate }.distinctBy { it.uniqueId }

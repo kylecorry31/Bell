@@ -10,7 +10,12 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 
-abstract class AtomAlertSource(context: Context, private val titleTag: String = "title") :
+
+abstract class AtomAlertSource(
+    context: Context,
+    private val titleSelector: String = "title",
+    private val summarySelector: String = "summary"
+) :
     AlertSource {
 
     private val http = HttpService(context)
@@ -25,11 +30,12 @@ abstract class AtomAlertSource(context: Context, private val titleTag: String = 
         )
         val xml = XMLConvert.parse(response)
         val items = findAll(xml, "entry").map {
-            val title = find(it, titleTag)?.text ?: ""
-            val link = find(it, "link")?.text ?: ""
+            val title = getTextBySelector(it, titleSelector) ?: ""
+            val linkElement = find(it, "link")
+            val link = linkElement?.attributes?.get("href") ?: linkElement?.text ?: ""
             val guid = find(it, "id")?.text ?: ""
             val pubDate = find(it, "updated")?.text ?: ""
-            val summary = find(it, "summary")?.text ?: ""
+            val summary = getTextBySelector(it, summarySelector) ?: ""
             val pubDateTimestamp = parseDate(pubDate)
             Alert(
                 id = 0,
@@ -87,5 +93,32 @@ abstract class AtomAlertSource(context: Context, private val titleTag: String = 
             }
         }
         return null
+    }
+
+    private fun getTextBySelector(xml: XMLNode, selector: String): String? {
+        val tag = selector.substringBefore("[")
+        var matches = findAll(xml, tag)
+
+        var remainingSelector = if (selector == tag) {
+            ""
+        } else {
+            selector
+        }
+        while (matches.isNotEmpty() && remainingSelector.isNotEmpty()) {
+            val attribute = remainingSelector.substringAfter("[").substringBefore("]")
+            if (attribute.contains("=")) {
+                val parts = attribute.split("=")
+                val key = parts[0]
+                val value = parts[1]
+                matches = matches.filter { it.attributes[key] == value }
+                remainingSelector = remainingSelector.substringAfter("]")
+            } else {
+                // This is a stop condition
+                return matches.firstOrNull()?.attributes?.get(attribute)
+            }
+        }
+
+        return matches.firstOrNull()?.text
+
     }
 }

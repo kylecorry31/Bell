@@ -26,7 +26,13 @@ class CDCAlertSource : AlertSource {
                 return@mapNotNull null
             }
 
-            val title = titleElement.text()
+            val title = titleElement.text().let {
+                if (it.contains("Health Alert Network (HAN)")) {
+                    it.substringAfter("– ")
+                } else {
+                    it
+                }
+            }
             val date = dateElement.text()
             val link = titleElement.attr("href")
 

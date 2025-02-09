@@ -67,7 +67,9 @@ class AlertUpdater(private val context: Context) {
         // Generate summaries and save new/updated alerts
         (newAlerts + updatedAlerts).forEach { alert ->
             setProgress(completedSummaryCount.toFloat() / (newAlerts.size + updatedAlerts.size))
-            val summary = if (alert.useLinkForSummary) {
+            val summary = if (!alert.shouldSummarize) {
+                alert.summary
+            } else if (alert.useLinkForSummary) {
                 gemini.summarizeUrl(alert.link)
             } else {
                 gemini.summarize(

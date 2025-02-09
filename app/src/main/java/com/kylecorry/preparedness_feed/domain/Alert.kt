@@ -11,5 +11,6 @@ data class Alert(
     val uniqueId: String,
     val publishedDate: ZonedDateTime,
     val summary: String,
-    val useLinkForSummary: Boolean = true
+    val useLinkForSummary: Boolean = true,
+    val shouldSummarize: Boolean = true
 )

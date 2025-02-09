@@ -6,8 +6,6 @@ import com.kylecorry.andromeda.xml.XMLNode
 import com.kylecorry.preparedness_feed.domain.Alert
 import com.kylecorry.preparedness_feed.domain.AlertSource
 import com.kylecorry.preparedness_feed.infrastructure.internet.HttpService
-import java.time.LocalDateTime
-import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
@@ -53,15 +51,12 @@ abstract class RssAlertSource(context: Context) : AlertSource {
 
     private fun parseDate(date: String): ZonedDateTime {
         return try {
-            //             pub_date = int(datetime.strptime(pub_date, "%a, %d %b %Y %H:%M:%S %z").timestamp())
             val parsed = DateTimeFormatter.RFC_1123_DATE_TIME.parse(date)
             ZonedDateTime.from(parsed)
         } catch (e: DateTimeParseException) {
-            val tzAbbr = date.split(" ").last()
-            val zone = ZoneId.of(tzAbbr.ifEmpty { "UTC" })
-            val formatter = DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss")
-            val parsedUtc = LocalDateTime.parse(date.replace(tzAbbr, "").trim(), formatter)
-            ZonedDateTime.of(parsedUtc, zone)
+            // Mon, 03 Feb 2025 14:37:56 EST
+            val formatter = DateTimeFormatter.ofPattern("dd MMM yyyy HH:mm:ss z")
+            ZonedDateTime.parse(date.substringAfter(", "), formatter)
         }
     }
 
