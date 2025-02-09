@@ -136,7 +136,7 @@ class AlertUpdater(private val context: Context) {
         val newAlert = source?.updateFromFullText(alert, fullText) ?: alert
 
         val summary = tryOrDefault(newAlert.summary) {
-            if (true || isOld || !newAlert.shouldSummarize) {
+            if (isOld || !newAlert.shouldSummarize) {
                 newAlert.summary
             } else {
                 "### AI Summary\n\n${gemini.summarize(fullText)}\n\n### Original Summary\n\n${newAlert.summary}"
