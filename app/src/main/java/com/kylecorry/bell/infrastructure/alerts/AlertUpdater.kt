@@ -41,6 +41,7 @@ class AlertUpdater(private val context: Context) {
             InciwebWildfireAlertSource(context),
             NationalTsunamiAlertSource(context),
             PacificTsunamiAlertSource(context),
+            TravelAdvisoriesAlertSource(context)
         )
 
         var completedCount = 0

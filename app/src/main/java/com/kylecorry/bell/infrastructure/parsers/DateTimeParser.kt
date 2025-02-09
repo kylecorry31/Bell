@@ -112,6 +112,8 @@ object DateTimeParser {
         val patterns = listOf(
             DateTimeFormatter.ISO_LOCAL_DATE,
             DateTimeFormatter.ofPattern("MMM dd yyyy"),
+            DateTimeFormatter.ofPattern("EEE, dd MMM yyyy"),
+            DateTimeFormatter.ofPattern("dd MMM yyyy"),
         )
 
         for (pattern in patterns) {
