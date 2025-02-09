@@ -31,6 +31,7 @@ fun Alerts() = Component {
     // Load the initial alerts
     useBackgroundEffect(repo) {
         setLoading(true)
+        repo.cleanup()
         setAlerts(repo.getAll())
         setLoading(false)
     }

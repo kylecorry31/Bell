@@ -32,7 +32,8 @@ class AlertUpdater(private val context: Context) {
             USGSEarthquakeAlertSource(context),
             USGSWaterAlertSource(context),
             SWPCAlertSource(context),
-            CDCAlertSource()
+            CDCAlertSource(),
+            USGSVolcanoAlertSource(),
         )
 
         val allAlerts = mutableListOf<Alert>()

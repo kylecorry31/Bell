@@ -127,7 +127,8 @@ object DateTimeParser {
         val patterns = listOf(
             DateTimeFormatter.ISO_LOCAL_DATE_TIME,
             DateTimeFormatter.ofPattern("MM/dd/yyyy h:mm a"),
-            DateTimeFormatter.ofPattern("MM/dd/yyyy, h:mm a")
+            DateTimeFormatter.ofPattern("MM/dd/yyyy, h:mm a"),
+            DateTimeFormatter.ofPattern("'('yyyyMMdd'/'HHmm')'"),
         )
 
         for (pattern in patterns) {
