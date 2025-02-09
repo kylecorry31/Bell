@@ -79,11 +79,9 @@ class AlertUpdater(private val context: Context) {
                 if (!alert.shouldSummarize) {
                     alert.summary
                 } else if (alert.useLinkForSummary) {
-                    gemini.summarizeUrl(alert.link)
+                    "## AI Summary\n\n${gemini.summarizeUrl(alert.link)}\n\n## Original Summary\n\n${alert.summary}"
                 } else {
-                    gemini.summarize(
-                        alert.summary
-                    )
+                    "## AI Summary\n\n${gemini.summarize(alert.summary)}\n\n## Original Summary\n\n${alert.summary}"
                 }
             }
             val newAlert = alert.copy(summary = summary)
