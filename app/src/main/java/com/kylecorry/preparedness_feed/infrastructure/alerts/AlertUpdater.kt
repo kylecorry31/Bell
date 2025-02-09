@@ -39,6 +39,7 @@ class AlertUpdater(private val context: Context) {
             CDCAlertSource(),
             USGSVolcanoAlertSource(),
             CongressionalBillsAlertSource(context),
+            InciwebWildfireAlertSource(context),
         )
 
         var completedCount = 0

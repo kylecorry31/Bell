@@ -16,6 +16,7 @@ object AlertTypeMapper {
             AlertType.Health -> R.drawable.health
             AlertType.Volcano -> R.drawable.volcano
             AlertType.Other -> R.drawable.ic_info
+            AlertType.Fire -> R.drawable.fire
         }
     }
 
@@ -29,6 +30,7 @@ object AlertTypeMapper {
             AlertType.Health -> context.getString(R.string.health)
             AlertType.Volcano -> context.getString(R.string.volcano)
             AlertType.Other -> context.getString(R.string.other)
+            AlertType.Fire -> context.getString(R.string.fire)
         }
     }
 

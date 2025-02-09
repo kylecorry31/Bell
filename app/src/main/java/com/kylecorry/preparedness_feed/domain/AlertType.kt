@@ -8,5 +8,6 @@ enum class AlertType {
     SpaceWeather,
     Health,
     Volcano,
+    Fire,
     Other
 }
