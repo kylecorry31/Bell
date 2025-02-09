@@ -43,13 +43,16 @@ class AlertUpdater(private val context: Context) {
 
         val runner = ParallelCoroutineRunner()
         val allAlerts = runner.map(sources) {
-            val sourceAlerts =
-                it.getAlerts(minTime).filter { alert -> alert.publishedDate.isAfter(minTime) }
-            synchronized(lock) {
-                completedCount++
-                setProgress(completedCount.toFloat() / totalCount)
+            tryOrDefault(emptyList()) {
+                // TODO: If this fails, let the user know
+                val sourceAlerts =
+                    it.getAlerts(minTime).filter { alert -> alert.publishedDate.isAfter(minTime) }
+                synchronized(lock) {
+                    completedCount++
+                    setProgress(completedCount.toFloat() / totalCount)
+                }
+                sourceAlerts
             }
-            sourceAlerts
         }.flatten()
 
         val newAlerts = allAlerts.filter { alert ->
