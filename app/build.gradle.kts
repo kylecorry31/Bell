@@ -11,12 +11,12 @@ plugins {
 }
 
 android {
-    namespace = "com.kylecorry.preparedness_feed"
+    namespace = "com.kylecorry.bell"
     compileSdk = 35
 
     defaultConfig {
         vectorDrawables.useSupportLibrary = true
-        applicationId = "com.kylecorry.preparedness_feed"
+        applicationId = "com.kylecorry.bell"
         minSdk = 23
         targetSdk = 35
         versionCode = 1

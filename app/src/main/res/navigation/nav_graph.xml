@@ -7,10 +7,10 @@
 
     <fragment
         android:id="@+id/action_main"
-        android:name="com.kylecorry.preparedness_feed.ui.MainFragment"
+        android:name="com.kylecorry.bell.ui.MainFragment"
         android:label="MainFragment" />
     <fragment
         android:id="@+id/action_settings"
-        android:name="com.kylecorry.preparedness_feed.ui.SettingsFragment"
+        android:name="com.kylecorry.bell.ui.SettingsFragment"
         android:label="SettingsFragment" />
 </navigation>

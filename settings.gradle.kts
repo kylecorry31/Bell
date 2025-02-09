@@ -27,4 +27,4 @@ dependencyResolutionManagement {
 }
 
 include(":app")
-rootProject.name = "Preparedness Feed"
+rootProject.name = "Bell"
