@@ -4,11 +4,12 @@ import android.content.Context
 import com.kylecorry.andromeda.xml.XMLConvert
 import com.kylecorry.andromeda.xml.XMLNode
 import com.kylecorry.preparedness_feed.domain.Alert
+import com.kylecorry.preparedness_feed.domain.AlertLevel
 import com.kylecorry.preparedness_feed.domain.AlertSource
+import com.kylecorry.preparedness_feed.domain.AlertType
 import com.kylecorry.preparedness_feed.infrastructure.internet.HttpService
+import com.kylecorry.preparedness_feed.infrastructure.parsers.DateTimeParser
 import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
-import java.time.format.DateTimeParseException
 
 
 abstract class AtomAlertSource(
@@ -29,19 +30,19 @@ abstract class AtomAlertSource(
             )
         )
         val xml = XMLConvert.parse(response)
-        val items = findAll(xml, "entry").map {
+        val items = findAll(xml, "entry").mapNotNull {
             val title = getTextBySelector(it, titleSelector) ?: ""
             val linkElement = find(it, "link")
             val link = linkElement?.attributes?.get("href") ?: linkElement?.text ?: ""
             val guid = find(it, "id")?.text ?: ""
             val pubDate = find(it, "updated")?.text ?: ""
             val summary = getTextBySelector(it, summarySelector) ?: ""
-            val pubDateTimestamp = parseDate(pubDate)
+            val pubDateTimestamp = DateTimeParser.parse(pubDate) ?: return@mapNotNull null
             Alert(
                 id = 0,
                 title = title,
-                source = url,
-                type = "Atom",
+                type = AlertType.Other,
+                level = AlertLevel.Other,
                 link = link,
                 uniqueId = guid,
                 publishedDate = pubDateTimestamp,
@@ -55,20 +56,6 @@ abstract class AtomAlertSource(
 
     open fun postProcessAlerts(alerts: List<Alert>): List<Alert> {
         return alerts
-    }
-
-    private fun parseDate(date: String): ZonedDateTime {
-        return try {
-            ZonedDateTime.parse(date)
-        } catch (e: DateTimeParseException) {
-            try {
-                val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ")
-                ZonedDateTime.parse(date, formatter)
-            } catch (e: DateTimeParseException) {
-                val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX")
-                ZonedDateTime.parse(date, formatter)
-            }
-        }
     }
 
     private fun findAll(xml: XMLNode, tag: String): List<XMLNode> {

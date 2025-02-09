@@ -46,12 +46,12 @@ class AlertUpdater(private val context: Context) {
         allAlerts.removeIf { it.publishedDate.isBefore(minTime) }
 
         val newAlerts = allAlerts.filter { alert ->
-            alerts.none { it.uniqueId == alert.uniqueId && it.source == alert.source }
+            alerts.none { it.uniqueId == alert.uniqueId && it.type == alert.type }
         }
 
         val updatedAlerts = allAlerts.mapNotNull { alert ->
             val existing =
-                alerts.find { it.uniqueId == alert.uniqueId && it.source == alert.source && it.publishedDate.toInstant() != alert.publishedDate.toInstant() }
+                alerts.find { it.uniqueId == alert.uniqueId && it.type == alert.type && it.publishedDate.toInstant() != alert.publishedDate.toInstant() }
             if (existing != null) {
                 alert.copy(id = existing.id)
             } else {

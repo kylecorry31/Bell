@@ -34,8 +34,8 @@ fun AlertList(config: AlertListAttributes.() -> Unit) = Component(config) { attr
                 it.title,
                 formatter.formatDateTime(it.publishedDate),
                 tags = listOf(
-                    ListItemTag(it.source, null, primaryColor),
-                    ListItemTag(it.type, null, Color.LTGRAY),
+                    ListItemTag(it.type.name, null, primaryColor),
+                    ListItemTag(it.level.name, null, Color.LTGRAY),
                 ),
                 longClickAction = {
                     attrs.onDelete?.invoke(it)

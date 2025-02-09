@@ -2,6 +2,7 @@ package com.kylecorry.preparedness_feed.infrastructure.alerts
 
 import android.content.Context
 import com.kylecorry.preparedness_feed.domain.Alert
+import com.kylecorry.preparedness_feed.domain.AlertLevel
 import com.kylecorry.preparedness_feed.domain.AlertType
 import java.time.ZonedDateTime
 
@@ -17,8 +18,8 @@ class USGSWaterAlertSource(context: Context) : RssAlertSource(context) {
         return alerts.map {
             val location = locationRegex.find(it.title)?.groupValues?.get(1) ?: ""
             it.copy(
-                source = "Water",
-                type = AlertType.Warning.name,
+                type = AlertType.Water,
+                level = AlertLevel.Warning,
                 link = it.link.replace("http://", "https://"),
                 title = it.title.substringAfter(") ") + " ($location)"
             )
