@@ -32,12 +32,13 @@ class AlertUpdater(private val context: Context) {
         // TODO: Download alerts in parallel
         val sources = listOf(
             NationalWeatherServiceAlertSource(context, "RI"),
-            ExecutiveOrderAlertSource(context),
+            WhiteHousePresidentalActionsAlertSource(context),
             USGSEarthquakeAlertSource(context),
             USGSWaterAlertSource(context),
             SWPCAlertSource(context),
             CDCAlertSource(),
             USGSVolcanoAlertSource(),
+            CongressionalBillsAlertSource(context),
         )
 
         var completedCount = 0
@@ -73,10 +74,15 @@ class AlertUpdater(private val context: Context) {
         }
 
         // If the source system is active only and an existing alert is not in the new alerts, remove it
+        var anyDeleted = false
         sources.filter { it.isActiveOnly() }.forEach { source ->
             val toDelete =
                 alerts.filter { alert -> alert.sourceSystem == source.getSystemName() && allAlerts.none { alert.uniqueId == it.uniqueId && alert.sourceSystem == it.sourceSystem } }
+            anyDeleted = anyDeleted || toDelete.isNotEmpty()
             toDelete.forEach { repo.delete(it) }
+        }
+        if (anyDeleted) {
+            onAlertsUpdated(repo.getAll())
         }
 
         setProgress(0f)

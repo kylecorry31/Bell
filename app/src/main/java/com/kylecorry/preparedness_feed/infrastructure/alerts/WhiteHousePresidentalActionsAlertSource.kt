@@ -4,10 +4,11 @@ import android.content.Context
 import com.kylecorry.preparedness_feed.domain.Alert
 import com.kylecorry.preparedness_feed.domain.AlertLevel
 import com.kylecorry.preparedness_feed.domain.AlertType
+import com.kylecorry.preparedness_feed.infrastructure.utils.HtmlTextFormatter
 import org.jsoup.Jsoup
 import java.time.ZonedDateTime
 
-class ExecutiveOrderAlertSource(context: Context) : RssAlertSource(context) {
+class WhiteHousePresidentalActionsAlertSource(context: Context) : RssAlertSource(context) {
     override fun getUrl(since: ZonedDateTime): String {
         return "https://www.whitehouse.gov/presidential-actions/feed/"
     }
@@ -17,7 +18,8 @@ class ExecutiveOrderAlertSource(context: Context) : RssAlertSource(context) {
             it.copy(
                 type = AlertType.Government,
                 level = AlertLevel.Announcement,
-                sourceSystem = getSystemName()
+                sourceSystem = getSystemName(),
+                title = "Executive Order: ${it.title}"
             )
         }.distinctBy { it.title }
     }
@@ -38,9 +40,7 @@ class ExecutiveOrderAlertSource(context: Context) : RssAlertSource(context) {
             return alert.copy(summary = "", shouldSummarize = false, level = AlertLevel.Noise)
         }
 
-        val content = Jsoup.parse(html.select(".entry-content > p").html()).wholeText()
-            .replace(" ", "").split("\n").filter { it.trim().isNotBlank() }
-            .joinToString("\n\n") { it.trim() }
+        val content = HtmlTextFormatter.getText(fullText, ".entry-content > p")
         return alert.copy(summary = content)
     }
 }
