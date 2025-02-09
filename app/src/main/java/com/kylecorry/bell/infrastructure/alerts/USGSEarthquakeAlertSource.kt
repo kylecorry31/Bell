@@ -13,7 +13,7 @@ class USGSEarthquakeAlertSource(context: Context) :
 
     private val eventTimeRegex = Regex("<dt>Time</dt><dd>([^<]*)</dd>")
 
-    override fun getUrl(since: ZonedDateTime): String {
+    override fun getUrl(): String {
         return "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/significant_day.atom"
     }
 
@@ -52,9 +52,5 @@ class USGSEarthquakeAlertSource(context: Context) :
 
     override fun getSystemName(): String {
         return "USGS Earthquake"
-    }
-
-    override fun isActiveOnly(): Boolean {
-        return false
     }
 }

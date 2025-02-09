@@ -6,12 +6,12 @@ import com.kylecorry.bell.domain.Alert
 import com.kylecorry.bell.domain.AlertLevel
 import com.kylecorry.bell.domain.AlertSource
 import com.kylecorry.bell.domain.AlertType
+import com.kylecorry.bell.domain.Constants
 import com.kylecorry.bell.infrastructure.internet.HttpService
 import com.kylecorry.bell.infrastructure.parsers.DateTimeParser
 import com.kylecorry.sol.time.Time.atEndOfDay
 import java.time.Duration
 import java.time.ZoneId
-import java.time.ZonedDateTime
 
 class SWPCAlertSource(context: Context) : AlertSource {
 
@@ -22,7 +22,7 @@ class SWPCAlertSource(context: Context) : AlertSource {
 
     class SWPCResponse(val issue_datetime: String, val message: String)
 
-    override suspend fun getAlerts(since: ZonedDateTime): List<Alert> {
+    override suspend fun getAlerts(): List<Alert> {
         val url = "https://services.swpc.noaa.gov/products/alerts.json"
         val response = http.get(url)
         val json = JsonConvert.fromJson<Array<SWPCResponse>>(response) ?: return emptyList()
@@ -60,21 +60,15 @@ class SWPCAlertSource(context: Context) : AlertSource {
                 "https://www.swpc.noaa.gov/",
                 "geomagnetic-storm", // Only one geomagnetic storm alert should be shown
                 publishedDate,
+                expirationDate
+                    ?: publishedDate.plusDays(Constants.DEFAULT_EXPIRATION_DAYS),
                 it.message,
-                expirationDate = expirationDate,
                 useLinkForSummary = false
             )
         }
-            .filter { it.publishedDate.isAfter(since) }
-            .sortedByDescending { it.publishedDate }
-            .distinctBy { it.uniqueId }
     }
 
     override fun getSystemName(): String {
         return "Space Weather Prediction Center"
-    }
-
-    override fun isActiveOnly(): Boolean {
-        return false
     }
 }

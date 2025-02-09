@@ -45,8 +45,8 @@ data class AlertEntity(
             link,
             uniqueId,
             publishedDate.atZone(ZoneId.systemDefault()),
+            expirationDate?.atZone(ZoneId.systemDefault()),
             summary,
-            expirationDate = expirationDate?.atZone(ZoneId.systemDefault())
         )
     }
 

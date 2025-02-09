@@ -15,8 +15,8 @@ abstract class RssAlertSource(context: Context) : AlertSource {
 
     private val http = HttpService(context)
 
-    override suspend fun getAlerts(since: ZonedDateTime): List<Alert> {
-        val url = getUrl(since)
+    override suspend fun getAlerts(): List<Alert> {
+        val url = getUrl()
         val response = http.get(
             url, headers = mapOf(
                 "User-Agent" to "Mozilla/5.0 (Linux; Android 13; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
@@ -41,11 +41,11 @@ abstract class RssAlertSource(context: Context) : AlertSource {
                 publishedDate = pubDateTimestamp,
                 summary = summary
             )
-        }.filter { it.publishedDate.isAfter(since) }
+        }
         return postProcessAlerts(items)
     }
 
-    abstract fun getUrl(since: ZonedDateTime): String
+    abstract fun getUrl(): String
 
     open fun postProcessAlerts(alerts: List<Alert>): List<Alert> {
         return alerts

@@ -12,7 +12,7 @@ import java.time.ZonedDateTime
 
 class USGSVolcanoAlertSource : AlertSource {
 
-    override suspend fun getAlerts(since: ZonedDateTime): List<Alert> = onIO {
+    override suspend fun getAlerts(): List<Alert> = onIO {
         val document = Jsoup.connect("https://www.usgs.gov/programs/VHP/volcano-updates").get()
         val alerts = document.select(".usgs-vol-up-vonas")
 
@@ -56,19 +56,13 @@ class USGSVolcanoAlertSource : AlertSource {
                 "https://www.usgs.gov/programs/VHP/volcano-updates",
                 volcano,
                 parsedDate,
-                summary,
+                summary = summary,
                 useLinkForSummary = false
             )
-        }.sortedByDescending { it.publishedDate }.distinctBy { it.uniqueId }
-            .filter { it.publishedDate.isAfter(since) }
-
+        }
     }
 
     override fun getSystemName(): String {
         return "USGS Volcanoes"
-    }
-
-    override fun isActiveOnly(): Boolean {
-        return true
     }
 }

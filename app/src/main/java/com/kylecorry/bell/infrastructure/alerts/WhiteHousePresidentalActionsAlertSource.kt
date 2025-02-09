@@ -4,12 +4,12 @@ import android.content.Context
 import com.kylecorry.bell.domain.Alert
 import com.kylecorry.bell.domain.AlertLevel
 import com.kylecorry.bell.domain.AlertType
+import com.kylecorry.bell.domain.Constants
 import com.kylecorry.bell.infrastructure.utils.HtmlTextFormatter
 import org.jsoup.Jsoup
-import java.time.ZonedDateTime
 
 class WhiteHousePresidentalActionsAlertSource(context: Context) : RssAlertSource(context) {
-    override fun getUrl(since: ZonedDateTime): String {
+    override fun getUrl(): String {
         return "https://www.whitehouse.gov/presidential-actions/feed/"
     }
 
@@ -19,17 +19,14 @@ class WhiteHousePresidentalActionsAlertSource(context: Context) : RssAlertSource
                 type = AlertType.Government,
                 level = AlertLevel.Announcement,
                 sourceSystem = getSystemName(),
-                title = "Executive Order: ${it.title}"
+                title = "Executive Order: ${it.title}",
+                expirationDate = it.publishedDate.plusDays(Constants.DEFAULT_EXPIRATION_DAYS),
             )
-        }.distinctBy { it.title }
+        }.distinctBy { it.title }.take(10)
     }
 
     override fun getSystemName(): String {
         return "White House"
-    }
-
-    override fun isActiveOnly(): Boolean {
-        return false
     }
 
     override fun updateFromFullText(alert: Alert, fullText: String): Alert {

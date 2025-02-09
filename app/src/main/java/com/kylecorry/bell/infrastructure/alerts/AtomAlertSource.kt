@@ -9,7 +9,6 @@ import com.kylecorry.bell.domain.AlertType
 import com.kylecorry.bell.infrastructure.internet.HttpService
 import com.kylecorry.bell.infrastructure.parsers.DateTimeParser
 import com.kylecorry.bell.infrastructure.utils.XmlUtils
-import java.time.ZonedDateTime
 
 
 abstract class AtomAlertSource(
@@ -22,8 +21,8 @@ abstract class AtomAlertSource(
 
     private val http = HttpService(context)
 
-    override suspend fun getAlerts(since: ZonedDateTime): List<Alert> {
-        val url = getUrl(since)
+    override suspend fun getAlerts(): List<Alert> {
+        val url = getUrl()
         val response = http.get(
             url,
             headers = mapOf(
@@ -54,11 +53,11 @@ abstract class AtomAlertSource(
                 publishedDate = pubDateTimestamp,
                 summary = summary
             )
-        }.filter { it.publishedDate.isAfter(since) }
+        }
         return postProcessAlerts(items)
     }
 
-    abstract fun getUrl(since: ZonedDateTime): String
+    abstract fun getUrl(): String
 
     open fun postProcessAlerts(alerts: List<Alert>): List<Alert> {
         return alerts

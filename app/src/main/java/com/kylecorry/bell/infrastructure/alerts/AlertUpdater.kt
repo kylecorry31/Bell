@@ -3,12 +3,13 @@ package com.kylecorry.bell.infrastructure.alerts
 import android.content.Context
 import com.kylecorry.andromeda.core.tryOrDefault
 import com.kylecorry.bell.domain.Alert
+import com.kylecorry.bell.domain.AlertSource
 import com.kylecorry.bell.infrastructure.internet.WebPageDownloader
 import com.kylecorry.bell.infrastructure.persistence.AlertRepo
-import com.kylecorry.bell.infrastructure.persistence.AlertRepo.Companion.DAYS_TO_KEEP_ALERTS
 import com.kylecorry.bell.infrastructure.persistence.UserPreferences
 import com.kylecorry.bell.infrastructure.summarization.Gemini
 import com.kylecorry.bell.infrastructure.utils.ParallelCoroutineRunner
+import com.kylecorry.luna.coroutines.onIO
 import java.time.ZonedDateTime
 
 class AlertUpdater(private val context: Context) {
@@ -27,22 +28,7 @@ class AlertUpdater(private val context: Context) {
 
         val alerts = repo.getAll()
 
-        val minTime = ZonedDateTime.now().minusDays(DAYS_TO_KEEP_ALERTS)
-
-        val sources = listOf(
-            NationalWeatherServiceAlertSource(context, preferences.state),
-            WhiteHousePresidentalActionsAlertSource(context),
-            USGSEarthquakeAlertSource(context),
-            USGSWaterAlertSource(context),
-            SWPCAlertSource(context),
-            CDCAlertSource(),
-            USGSVolcanoAlertSource(),
-            CongressionalBillsAlertSource(context),
-            InciwebWildfireAlertSource(context),
-            NationalTsunamiAlertSource(context),
-            PacificTsunamiAlertSource(context),
-            TravelAdvisoriesAlertSource(context)
-        )
+        val sources = getSources()
 
         var completedCount = 0
         val totalCount = sources.size
@@ -52,8 +38,10 @@ class AlertUpdater(private val context: Context) {
         val allAlerts = runner.map(sources) {
             tryOrDefault(emptyList()) {
                 // TODO: If this fails, let the user know
-                val sourceAlerts =
-                    it.getAlerts(minTime).filter { alert -> alert.publishedDate.isAfter(minTime) }
+                val sourceAlerts = it.getAlerts()
+                    .filterNot { it.isExpired() }
+                    .sortedByDescending { it.publishedDate }
+                    .distinctBy { it.uniqueId }
                 synchronized(lock) {
                     completedCount++
                     setProgress(completedCount.toFloat() / totalCount)
@@ -76,9 +64,9 @@ class AlertUpdater(private val context: Context) {
             }
         }
 
-        // If the source system is active only and an existing alert is not in the new alerts, remove it
+        // Delete alerts that are no longer present in the feeds
         var anyDeleted = false
-        sources.filter { it.isActiveOnly() }.forEach { source ->
+        sources.forEach { source ->
             val toDelete =
                 alerts.filter { alert -> alert.sourceSystem == source.getSystemName() && allAlerts.none { alert.uniqueId == it.uniqueId && alert.sourceSystem == it.sourceSystem } }
             anyDeleted = anyDeleted || toDelete.isNotEmpty()
@@ -96,30 +84,70 @@ class AlertUpdater(private val context: Context) {
         // Generate summaries and save new/updated alerts
         (newAlerts + updatedAlerts).forEach { alert ->
             setProgress(completedSummaryCount.toFloat() / (newAlerts.size + updatedAlerts.size))
-
-            // Load the full text if it should use the link for the summary
-            val fullText = tryOrDefault(alert.summary) {
-                if (alert.useLinkForSummary) {
-                    pageDownloader.download(alert.link)
-                } else {
-                    alert.summary
-                }
+            val newAlert = reloadSummary(alert)
+            val isOld = isOld(newAlert)
+            // Don't update the list right away for old alerts
+            if (!isOld) {
+                onAlertsUpdated(repo.getAll())
             }
-
-            val source = sources.find { it.getSystemName() == alert.sourceSystem }
-            val newAlert = source?.updateFromFullText(alert, fullText) ?: alert
-
-            val summary = tryOrDefault(newAlert.summary) {
-                if (!newAlert.shouldSummarize) {
-                    newAlert.summary
-                } else {
-                    "### AI Summary\n\n${gemini.summarize(fullText)}\n\n### Original Summary\n\n${newAlert.summary}"
-                }
-            }
-            repo.upsert(newAlert.copy(summary = summary))
-            onAlertsUpdated(repo.getAll())
             completedSummaryCount++
         }
+
+        onAlertsUpdated(repo.getAll())
+    }
+
+    private fun getSources(): List<AlertSource> {
+        return listOf(
+            NationalWeatherServiceAlertSource(context, preferences.state),
+            WhiteHousePresidentalActionsAlertSource(context),
+            USGSEarthquakeAlertSource(context),
+            USGSWaterAlertSource(context),
+            SWPCAlertSource(context),
+            CDCAlertSource(),
+            USGSVolcanoAlertSource(),
+            CongressionalBillsAlertSource(context),
+            InciwebWildfireAlertSource(context),
+            NationalTsunamiAlertSource(context),
+            PacificTsunamiAlertSource(context),
+            TravelAdvisoriesAlertSource(context)
+        )
+    }
+
+    suspend fun reloadSummary(alert: Alert): Alert = onIO {
+        val sources = getSources()
+
+        // Old alerts are not summarized and don't immediately update the list
+        val isOld = isOld(alert)
+        if (isOld && alert.canSkipDownloadIfOld) {
+            val id = repo.upsert(alert)
+            return@onIO alert.copy(id = id)
+        }
+
+        // Load the full text if it should use the link for the summary
+        val fullText = tryOrDefault(alert.summary) {
+            if (alert.useLinkForSummary) {
+                pageDownloader.download(alert.link)
+            } else {
+                alert.summary
+            }
+        }
+
+        val source = sources.find { it.getSystemName() == alert.sourceSystem }
+        val newAlert = source?.updateFromFullText(alert, fullText) ?: alert
+
+        val summary = tryOrDefault(newAlert.summary) {
+            if (true || isOld || !newAlert.shouldSummarize) {
+                newAlert.summary
+            } else {
+                "### AI Summary\n\n${gemini.summarize(fullText)}\n\n### Original Summary\n\n${newAlert.summary}"
+            }
+        }
+        val id = repo.upsert(newAlert.copy(summary = summary))
+        newAlert.copy(summary = summary, id = id)
+    }
+
+    private fun isOld(alert: Alert): Boolean {
+        return alert.publishedDate.isBefore(ZonedDateTime.now().minusDays(7))
     }
 
 }

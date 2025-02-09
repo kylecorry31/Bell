@@ -6,7 +6,6 @@ import com.kylecorry.bell.domain.AlertLevel
 import com.kylecorry.bell.domain.AlertType
 import com.kylecorry.bell.infrastructure.parsers.DateTimeParser
 import java.time.ZoneId
-import java.time.ZonedDateTime
 
 class InciwebWildfireAlertSource(context: Context) : RssAlertSource(context) {
 
@@ -14,16 +13,12 @@ class InciwebWildfireAlertSource(context: Context) : RssAlertSource(context) {
     private val stateRegex = Regex("State: (\\w+)")
     private val fireNameRegex = Regex("[A-Z0-9]+\\s(.+)\\sFire")
 
-    override fun getUrl(since: ZonedDateTime): String {
+    override fun getUrl(): String {
         return "https://inciweb.wildfire.gov/incidents/rss.xml"
     }
 
     override fun getSystemName(): String {
         return "Inciweb Wildfire"
-    }
-
-    override fun isActiveOnly(): Boolean {
-        return true
     }
 
     override fun postProcessAlerts(alerts: List<Alert>): List<Alert> {
@@ -48,7 +43,8 @@ class InciwebWildfireAlertSource(context: Context) : RssAlertSource(context) {
                 level = AlertLevel.Warning,
                 sourceSystem = getSystemName(),
                 useLinkForSummary = false,
-                publishedDate = lastUpdated
+                publishedDate = lastUpdated,
+                expirationDate = null
             )
         }
     }

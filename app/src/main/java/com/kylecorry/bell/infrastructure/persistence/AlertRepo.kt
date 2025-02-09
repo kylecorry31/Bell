@@ -24,12 +24,11 @@ class AlertRepo private constructor(context: Context) {
     }
 
     suspend fun cleanup() = onIO {
-        dao.deleteOlderThan(Instant.now().minus(Duration.ofDays(DAYS_TO_KEEP_ALERTS)))
+        // Don't delete expired alerts right away in case they still appear in the feed
+        dao.deleteExpired(Instant.now().minus(Duration.ofDays(30)))
     }
 
     companion object {
-        const val DAYS_TO_KEEP_ALERTS = 14L
-
         @SuppressLint("StaticFieldLeak")
         private var instance: AlertRepo? = null
 

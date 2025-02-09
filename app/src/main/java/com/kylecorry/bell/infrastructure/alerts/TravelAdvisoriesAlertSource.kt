@@ -17,16 +17,12 @@ class TravelAdvisoriesAlertSource(context: Context) : RssAlertSource(context) {
         4 to "Do Not Travel to"
     )
 
-    override fun getUrl(since: ZonedDateTime): String {
+    override fun getUrl(): String {
         return "https://travel.state.gov/_res/rss/TAsTWs.xml"
     }
 
     override fun getSystemName(): String {
         return "State Department Travel Advisories"
-    }
-
-    override fun isActiveOnly(): Boolean {
-        return true
     }
 
     override fun postProcessAlerts(alerts: List<Alert>): List<Alert> {

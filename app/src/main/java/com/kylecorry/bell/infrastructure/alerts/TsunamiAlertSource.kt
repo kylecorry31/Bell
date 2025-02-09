@@ -37,10 +37,6 @@ abstract class TsunamiAlertSource(context: Context) :
         return "NOAA Tsunami"
     }
 
-    override fun isActiveOnly(): Boolean {
-        return true
-    }
-
     override fun postProcessAlerts(alerts: List<Alert>): List<Alert> {
         return alerts.map {
             it.copy(

@@ -4,20 +4,17 @@ import android.content.Context
 import com.kylecorry.bell.domain.Alert
 import com.kylecorry.bell.domain.AlertLevel
 import com.kylecorry.bell.domain.AlertType
+import com.kylecorry.bell.domain.Constants
 import com.kylecorry.bell.infrastructure.utils.HtmlTextFormatter
 import java.time.ZonedDateTime
 
 class CongressionalBillsAlertSource(context: Context) : RssAlertSource(context) {
-    override fun getUrl(since: ZonedDateTime): String {
+    override fun getUrl(): String {
         return "https://www.congress.gov/rss/presented-to-president.xml"
     }
 
     override fun getSystemName(): String {
         return "Congress"
-    }
-
-    override fun isActiveOnly(): Boolean {
-        return false
     }
 
     override fun postProcessAlerts(alerts: List<Alert>): List<Alert> {
@@ -30,6 +27,7 @@ class CongressionalBillsAlertSource(context: Context) : RssAlertSource(context) 
                 level = AlertLevel.Announcement,
                 title = "Bill: ${it.title}",
                 sourceSystem = getSystemName(),
+                expirationDate = it.publishedDate.plusDays(Constants.DEFAULT_EXPIRATION_DAYS)
             )
         }
     }

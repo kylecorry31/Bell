@@ -1,18 +1,18 @@
 package com.kylecorry.bell.infrastructure.alerts
 
-import com.kylecorry.luna.coroutines.onIO
 import com.kylecorry.bell.domain.Alert
 import com.kylecorry.bell.domain.AlertLevel
 import com.kylecorry.bell.domain.AlertSource
 import com.kylecorry.bell.domain.AlertType
+import com.kylecorry.bell.domain.Constants
 import com.kylecorry.bell.infrastructure.parsers.DateTimeParser
 import com.kylecorry.bell.infrastructure.utils.HtmlTextFormatter
+import com.kylecorry.luna.coroutines.onIO
 import org.jsoup.Jsoup
-import java.time.ZonedDateTime
 
 class CDCAlertSource : AlertSource {
 
-    override suspend fun getAlerts(since: ZonedDateTime): List<Alert> = onIO {
+    override suspend fun getAlerts(): List<Alert> = onIO {
         val document = Jsoup.connect("https://www.cdc.gov/han/index.html").get()
         val alerts = document.select(".bg-quaternary .card")
 
@@ -48,18 +48,14 @@ class CDCAlertSource : AlertSource {
                 "https://www.cdc.gov$link",
                 link.split("/").last().replace(".html", ""),
                 parsedDate,
+                parsedDate.plusDays(Constants.DEFAULT_EXPIRATION_DAYS),
                 ""
             )
-        }.filter { it.publishedDate.isAfter(since) }
-
+        }
     }
 
     override fun getSystemName(): String {
         return "CDC"
-    }
-
-    override fun isActiveOnly(): Boolean {
-        return false
     }
 
     override fun updateFromFullText(alert: Alert, fullText: String): Alert {

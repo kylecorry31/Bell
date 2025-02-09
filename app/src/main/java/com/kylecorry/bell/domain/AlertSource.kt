@@ -1,11 +1,8 @@
 package com.kylecorry.bell.domain
 
-import java.time.ZonedDateTime
-
 interface AlertSource {
-    suspend fun getAlerts(since: ZonedDateTime): List<Alert>
+    suspend fun getAlerts(): List<Alert>
     fun getSystemName(): String
-    fun isActiveOnly(): Boolean
     fun updateFromFullText(alert: Alert, fullText: String): Alert {
         return alert
     }

@@ -11,11 +11,12 @@ data class Alert(
     val link: String,
     val uniqueId: String,
     val publishedDate: ZonedDateTime,
+    val expirationDate: ZonedDateTime? = null,
     val summary: String,
     val useLinkForSummary: Boolean = true,
     val shouldSummarize: Boolean = true,
-    val expirationDate: ZonedDateTime? = null,
-){
+    val canSkipDownloadIfOld: Boolean = true
+) {
     fun isExpired(time: ZonedDateTime = ZonedDateTime.now()): Boolean {
         return expirationDate?.isBefore(time) ?: false
     }

@@ -8,7 +8,7 @@ import java.time.ZonedDateTime
 
 class NationalWeatherServiceAlertSource(context: Context, private val area: String) :
     AtomAlertSource(context, "cap:event") {
-    override fun getUrl(since: ZonedDateTime): String {
+    override fun getUrl(): String {
         return "https://api.weather.gov/alerts/active.atom?area=$area"
     }
 
@@ -29,14 +29,10 @@ class NationalWeatherServiceAlertSource(context: Context, private val area: Stri
                 uniqueId = it.uniqueId.split("/").last().split(".")[6],
                 sourceSystem = getSystemName()
             )
-        }.sortedByDescending { it.publishedDate }.distinctBy { it.uniqueId }
+        }
     }
 
     override fun getSystemName(): String {
         return "National Weather Service"
-    }
-
-    override fun isActiveOnly(): Boolean {
-        return true
     }
 }
