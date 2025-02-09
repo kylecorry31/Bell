@@ -27,7 +27,7 @@ class Gemini(context: Context, private val apiKey: String) {
             "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=$apiKey"
 
         val prompt =
-            "Write a concise, high level, one sentence (< 280 characters) summary of following text:\n\n$textContent"
+            "Write a formal twitter post summary of the following text for the general public, without any hashtags:\n\n$textContent"
 
         val contents =
             JsonConvert.toJson(GeminiInput(listOf(GeminiContent(listOf(GeminiPart(prompt))))))
@@ -52,7 +52,11 @@ class Gemini(context: Context, private val apiKey: String) {
             requestTimes.removeAt(0)
         }
 
-        return response?.candidates?.firstOrNull()?.content?.parts?.firstOrNull()?.text ?: text
+        val summary =
+            response?.candidates?.firstOrNull()?.content?.parts?.firstOrNull()?.text ?: text
+
+        // Remove hashtags
+        return summary.replace(Regex("#[a-zA-Z0-9]+"), "")
     }
 
 }
