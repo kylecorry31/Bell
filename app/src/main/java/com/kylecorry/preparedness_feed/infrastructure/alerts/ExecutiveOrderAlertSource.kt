@@ -12,6 +12,6 @@ class ExecutiveOrderAlertSource(context: Context) : RssAlertSource(context) {
     override fun postProcessAlerts(alerts: List<Alert>): List<Alert> {
         return alerts.map {
             it.copy(type = "Executive Order", source = "White House")
-        }
+        }.distinctBy { it.title }
     }
 }

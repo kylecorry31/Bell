@@ -7,6 +7,7 @@ import com.kylecorry.andromeda.views.reactivity.AndromedaViews.AndromedaList
 import com.kylecorry.andromeda.views.reactivity.AndromedaViews.Component
 import com.kylecorry.andromeda.views.reactivity.ViewAttributes
 import com.kylecorry.preparedness_feed.domain.Alert
+import com.kylecorry.preparedness_feed.ui.FormatService
 
 class AlertListAttributes : ViewAttributes() {
     var alerts: List<Alert> = emptyList()
@@ -15,12 +16,17 @@ class AlertListAttributes : ViewAttributes() {
 }
 
 fun AlertList(config: AlertListAttributes.() -> Unit) = Component(config) { attrs ->
-    val listItems = useMemo(attrs.alerts, attrs.onDelete, attrs.onOpen) {
+    val context = useAndroidContext()
+    val formatter = useMemo(context) {
+        FormatService.getInstance(context)
+    }
+
+    val listItems = useMemo(attrs.alerts, attrs.onDelete, attrs.onOpen, formatter) {
         attrs.alerts.map {
             ListItem(
                 it.id,
                 it.title,
-                it.summary,
+                formatter.formatDateTime(it.publishedDate) + "\n\n" + it.summary,
                 tags = listOf(
                     ListItemTag(it.source, null, Color.GREEN),
                     ListItemTag(it.type, null, Color.BLUE),

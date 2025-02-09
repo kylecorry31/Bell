@@ -6,8 +6,6 @@ import com.kylecorry.andromeda.xml.XMLNode
 import com.kylecorry.preparedness_feed.domain.Alert
 import com.kylecorry.preparedness_feed.domain.AlertSource
 import com.kylecorry.preparedness_feed.infrastructure.internet.HttpService
-import java.time.LocalDateTime
-import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
@@ -55,8 +53,7 @@ abstract class AtomAlertSource(context: Context, private val titleTag: String = 
 
     private fun parseDate(date: String): ZonedDateTime {
         return try {
-            val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-            ZonedDateTime.parse(date, formatter)
+            ZonedDateTime.parse(date)
         } catch (e: DateTimeParseException) {
             try {
                 val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ")

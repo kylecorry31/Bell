@@ -9,15 +9,6 @@ import java.time.ZonedDateTime
 
 class AlertUpdater(private val context: Context) {
 
-    private val sources = listOf(
-        NationalWeatherServiceAlertSource(context, "RI"),
-        ExecutiveOrderAlertSource(context),
-        USGSEarthquakeAlertSource(context),
-        USGSWaterAlertSource(context),
-        SWPCAlertSource(context),
-        CDCAlertSource()
-    )
-
     private val repo = AlertRepo.getInstance(context)
     private val preferences = UserPreferences(context)
     private val gemini = Gemini(context, preferences.geminiApiKey)
