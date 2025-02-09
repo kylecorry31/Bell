@@ -2,6 +2,7 @@ package com.kylecorry.preparedness_feed.infrastructure.alerts
 
 import android.content.Context
 import com.kylecorry.preparedness_feed.domain.Alert
+import com.kylecorry.preparedness_feed.domain.AlertType
 import java.time.ZonedDateTime
 
 class ExecutiveOrderAlertSource(context: Context) : RssAlertSource(context) {
@@ -11,7 +12,7 @@ class ExecutiveOrderAlertSource(context: Context) : RssAlertSource(context) {
 
     override fun postProcessAlerts(alerts: List<Alert>): List<Alert> {
         return alerts.map {
-            it.copy(type = "Executive Order", source = "White House")
+            it.copy(type = AlertType.Order.name, source = "Government")
         }.distinctBy { it.title }
     }
 }

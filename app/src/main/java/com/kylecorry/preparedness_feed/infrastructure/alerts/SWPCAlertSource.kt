@@ -4,6 +4,7 @@ import android.content.Context
 import com.kylecorry.andromeda.json.JsonConvert
 import com.kylecorry.preparedness_feed.domain.Alert
 import com.kylecorry.preparedness_feed.domain.AlertSource
+import com.kylecorry.preparedness_feed.domain.AlertType
 import com.kylecorry.preparedness_feed.infrastructure.internet.HttpService
 import java.time.ZonedDateTime
 
@@ -34,8 +35,8 @@ class SWPCAlertSource(context: Context) : AlertSource {
             Alert(
                 0,
                 title,
-                "SWPC",
-                it.product_id,
+                "Space Weather",
+                AlertType.Watch.name,
                 "https://www.swpc.noaa.gov/",
                 serialNumber,
                 ZonedDateTime.parse(it.issue_datetime.replace(" ", "T") + "Z"),

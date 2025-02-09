@@ -3,6 +3,7 @@ package com.kylecorry.preparedness_feed.infrastructure.alerts
 import com.kylecorry.luna.coroutines.onIO
 import com.kylecorry.preparedness_feed.domain.Alert
 import com.kylecorry.preparedness_feed.domain.AlertSource
+import com.kylecorry.preparedness_feed.domain.AlertType
 import org.jsoup.Jsoup
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -41,8 +42,8 @@ class CDCAlertSource : AlertSource {
             Alert(
                 0,
                 title,
-                "CDC",
-                "Alert",
+                "Health",
+                AlertType.Warning.name,
                 "https://www.cdc.gov$link",
                 link.split("/").last().replace(".html", ""),
                 parsedDate,
