@@ -6,6 +6,7 @@ import com.kylecorry.bell.domain.AlertLevel
 import com.kylecorry.bell.domain.AlertSource
 import com.kylecorry.bell.domain.AlertType
 import com.kylecorry.bell.infrastructure.parsers.DateTimeParser
+import com.kylecorry.bell.infrastructure.utils.HtmlTextFormatter
 import org.jsoup.Jsoup
 import java.time.ZonedDateTime
 
@@ -68,10 +69,10 @@ class CDCAlertSource : AlertSource {
             else -> AlertLevel.Warning
         }
 
-        val summary = Jsoup.parse(
+        val summary = HtmlTextFormatter.getText(
             fullText.substringAfter("<strong>Summary</strong>")
                 .substringBefore("<strong>Background</strong>")
-        ).wholeText()
+        )
 
         return alert.copy(level = level, summary = summary)
     }

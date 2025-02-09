@@ -4,7 +4,7 @@ import org.jsoup.Jsoup
 
 object HtmlTextFormatter {
 
-    fun getText(document: String, selector: String?): String {
+    fun getText(document: String, selector: String? = null): String {
         val html = Jsoup.parse(document)
         val updatedHtml = if (selector != null) {
             html.select(selector).html()
