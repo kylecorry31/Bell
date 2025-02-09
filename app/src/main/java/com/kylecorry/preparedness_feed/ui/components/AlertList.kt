@@ -1,6 +1,12 @@
 package com.kylecorry.preparedness_feed.ui.components
 
 import android.graphics.Color
+import android.text.util.Linkify
+import androidx.core.text.buildSpannedString
+import androidx.core.text.toSpannable
+import androidx.core.text.util.LinkifyCompat
+import com.kylecorry.andromeda.alerts.Alerts
+import com.kylecorry.andromeda.core.system.Resources
 import com.kylecorry.andromeda.views.list.ListItem
 import com.kylecorry.andromeda.views.list.ListItemTag
 import com.kylecorry.andromeda.views.reactivity.AndromedaViews.AndromedaList
@@ -12,7 +18,6 @@ import com.kylecorry.preparedness_feed.ui.FormatService
 class AlertListAttributes : ViewAttributes() {
     var alerts: List<Alert> = emptyList()
     var onDelete: ((Alert) -> Unit)? = null
-    var onOpen: ((Alert) -> Unit)? = null
 }
 
 fun AlertList(config: AlertListAttributes.() -> Unit) = Component(config) { attrs ->
@@ -21,21 +26,38 @@ fun AlertList(config: AlertListAttributes.() -> Unit) = Component(config) { attr
         FormatService.getInstance(context)
     }
 
-    val listItems = useMemo(attrs.alerts, attrs.onDelete, attrs.onOpen, formatter) {
+    val listItems = useMemo(attrs.alerts, attrs.onDelete, formatter, context) {
+        val primaryColor = Resources.getAndroidColorAttr(context, android.R.attr.colorPrimary)
         attrs.alerts.map {
             ListItem(
                 it.id,
                 it.title,
-                formatter.formatDateTime(it.publishedDate) + "\n\n" + it.summary,
+                formatter.formatDateTime(it.publishedDate),
                 tags = listOf(
-                    ListItemTag(it.source, null, Color.GREEN),
-                    ListItemTag(it.type, null, Color.BLUE),
+                    ListItemTag(it.source, null, primaryColor),
+                    ListItemTag(it.type, null, Color.LTGRAY),
                 ),
                 longClickAction = {
                     attrs.onDelete?.invoke(it)
                 }
             ) {
-                attrs.onOpen?.invoke(it)
+                val content =
+                    buildSpannedString {
+                        appendLine(formatter.formatDateTime(it.publishedDate))
+                        appendLine()
+                        appendLine(it.link.trimEnd('/'))
+                        appendLine()
+                        appendLine(it.summary)
+                    }.toSpannable()
+                LinkifyCompat.addLinks(content, Linkify.WEB_URLS)
+
+                Alerts.dialog(
+                    context,
+                    it.title,
+                    content,
+                    allowLinks = true,
+                    cancelText = null
+                )
             }
         }
     }

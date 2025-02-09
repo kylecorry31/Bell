@@ -2,7 +2,6 @@ package com.kylecorry.preparedness_feed.ui.components
 
 import android.view.Gravity
 import android.view.ViewGroup
-import com.kylecorry.andromeda.core.system.Intents
 import com.kylecorry.andromeda.core.ui.useCallback
 import com.kylecorry.andromeda.core.ui.useSizeDp
 import com.kylecorry.andromeda.fragments.inBackground
@@ -50,14 +49,6 @@ fun Alerts() = Component {
         }
     }
 
-    val openAlert = useCallback<Alert, Unit>(context) { alert ->
-        if (alert.link.isEmpty()) {
-            return@useCallback
-        }
-        val intent = Intents.url(alert.link)
-        context.startActivity(intent)
-    }
-
     val deleteAlert = useCallback<Alert, Unit>(context) { alert ->
         inBackground {
             repo.delete(alert)
@@ -91,7 +82,6 @@ fun Alerts() = Component {
         AlertList {
             this.alerts = alerts
             onDelete = deleteAlert
-            onOpen = openAlert
         }
     )
 }
