@@ -21,8 +21,17 @@ class NationalWeatherServiceAlertSource(context: Context, private val area: Stri
                 } ?: AlertLevel.Other,
                 useLinkForSummary = false,
                 link = "https://alerts.weather.gov/search?area=$area",
-                uniqueId = it.uniqueId.split("/").last().split(".")[6]
+                uniqueId = it.uniqueId.split("/").last().split(".")[6],
+                sourceSystem = getSystemName()
             )
         }.sortedByDescending { it.publishedDate }.distinctBy { it.uniqueId }
+    }
+
+    override fun getSystemName(): String {
+        return "National Weather Service"
+    }
+
+    override fun isActiveOnly(): Boolean {
+        return true
     }
 }

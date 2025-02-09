@@ -18,9 +18,11 @@ data class AlertEntity(
     var id: Long = 0,
     @ColumnInfo(name = "title")
     var title: String,
-    @ColumnInfo(name = "source")
-    var type: String,
+    @ColumnInfo(name = "source_system")
+    var sourceSystem: String,
     @ColumnInfo(name = "type")
+    var type: String,
+    @ColumnInfo(name = "level")
     var level: String,
     @ColumnInfo(name = "link")
     var link: String,
@@ -30,17 +32,21 @@ data class AlertEntity(
     var publishedDate: Instant,
     @ColumnInfo(name = "summary")
     var summary: String,
+    @ColumnInfo(name = "expiration_date")
+    var expirationDate: Instant? = null,
 ) {
     fun toAlert(): Alert {
         return Alert(
             id,
             title,
+            sourceSystem,
             AlertType.entries.find { it.name == type } ?: AlertType.Other,
             AlertLevel.entries.find { it.name == level } ?: AlertLevel.Other,
             link,
             uniqueId,
             publishedDate.atZone(ZoneId.systemDefault()),
-            summary
+            summary,
+            expirationDate = expirationDate?.atZone(ZoneId.systemDefault())
         )
     }
 
@@ -49,12 +55,14 @@ data class AlertEntity(
             return AlertEntity(
                 alert.id,
                 alert.title,
+                alert.sourceSystem,
                 alert.type.name,
                 alert.level.name,
                 alert.link,
                 alert.uniqueId,
                 alert.publishedDate.toInstant(),
-                alert.summary
+                alert.summary,
+                alert.expirationDate?.toInstant(),
             )
         }
     }

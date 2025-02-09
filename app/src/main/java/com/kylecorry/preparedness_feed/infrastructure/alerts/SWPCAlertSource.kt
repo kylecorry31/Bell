@@ -36,14 +36,24 @@ class SWPCAlertSource(context: Context) : AlertSource {
             Alert(
                 0,
                 title,
+                getSystemName(),
                 AlertType.SpaceWeather,
                 AlertLevel.Watch,
                 "https://www.swpc.noaa.gov/",
                 "geomagnetic-storm", // Only one geomagnetic storm alert should be shown
-                DateTimeParser.parse(it.issue_datetime.replace(" ", "T") + "Z") ?: return@mapNotNull null,
+                DateTimeParser.parse(it.issue_datetime.replace(" ", "T") + "Z")
+                    ?: return@mapNotNull null,
                 it.message,
                 useLinkForSummary = false
             )
         }.filter { it.publishedDate.isAfter(since) }
+    }
+
+    override fun getSystemName(): String {
+        return "Space Weather Prediction Center"
+    }
+
+    override fun isActiveOnly(): Boolean {
+        return false
     }
 }

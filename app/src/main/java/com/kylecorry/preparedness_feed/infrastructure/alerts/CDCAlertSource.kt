@@ -2,8 +2,8 @@ package com.kylecorry.preparedness_feed.infrastructure.alerts
 
 import com.kylecorry.luna.coroutines.onIO
 import com.kylecorry.preparedness_feed.domain.Alert
-import com.kylecorry.preparedness_feed.domain.AlertSource
 import com.kylecorry.preparedness_feed.domain.AlertLevel
+import com.kylecorry.preparedness_feed.domain.AlertSource
 import com.kylecorry.preparedness_feed.domain.AlertType
 import com.kylecorry.preparedness_feed.infrastructure.parsers.DateTimeParser
 import org.jsoup.Jsoup
@@ -41,6 +41,7 @@ class CDCAlertSource : AlertSource {
             Alert(
                 0,
                 title,
+                getSystemName(),
                 AlertType.Health,
                 AlertLevel.Warning,
                 "https://www.cdc.gov$link",
@@ -50,6 +51,14 @@ class CDCAlertSource : AlertSource {
             )
         }.filter { it.publishedDate.isAfter(since) }
 
+    }
+
+    override fun getSystemName(): String {
+        return "CDC"
+    }
+
+    override fun isActiveOnly(): Boolean {
+        return false
     }
 
 }

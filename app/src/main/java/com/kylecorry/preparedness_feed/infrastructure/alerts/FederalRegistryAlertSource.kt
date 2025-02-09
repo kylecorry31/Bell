@@ -51,9 +51,18 @@ class FederalRegistryAlertSource(context: Context) : AlertSource {
                 link = it.raw_text_url,
                 uniqueId = it.executive_order_number,
                 publishedDate = date,
-                summary = ""
+                summary = "",
+                sourceSystem = getSystemName()
             )
         }.filter { it.publishedDate.isAfter(since) }
+    }
+
+    override fun getSystemName(): String {
+        return "Federal Register"
+    }
+
+    override fun isActiveOnly(): Boolean {
+        return false
     }
 
     private fun getUrl(

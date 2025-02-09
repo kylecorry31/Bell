@@ -41,6 +41,7 @@ abstract class AtomAlertSource(
             Alert(
                 id = 0,
                 title = title,
+                sourceSystem = "",
                 type = AlertType.Other,
                 level = AlertLevel.Other,
                 link = link,

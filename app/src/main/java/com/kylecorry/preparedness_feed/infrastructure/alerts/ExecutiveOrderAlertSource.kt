@@ -13,7 +13,19 @@ class ExecutiveOrderAlertSource(context: Context) : RssAlertSource(context) {
 
     override fun postProcessAlerts(alerts: List<Alert>): List<Alert> {
         return alerts.map {
-            it.copy(type = AlertType.Government, level = AlertLevel.Order)
+            it.copy(
+                type = AlertType.Government,
+                level = AlertLevel.Order,
+                sourceSystem = getSystemName()
+            )
         }.distinctBy { it.title }
+    }
+
+    override fun getSystemName(): String {
+        return "White House"
+    }
+
+    override fun isActiveOnly(): Boolean {
+        return false
     }
 }

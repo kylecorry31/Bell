@@ -5,6 +5,7 @@ import java.time.ZonedDateTime
 data class Alert(
     val id: Long,
     val title: String,
+    val sourceSystem: String,
     val type: AlertType,
     val level: AlertLevel,
     val link: String,
@@ -13,5 +14,6 @@ data class Alert(
     val summary: String,
     val useLinkForSummary: Boolean = true,
     val shouldSummarize: Boolean = true,
-    val expirationDate: ZonedDateTime? = null
+    // TODO: Save these fields
+    val expirationDate: ZonedDateTime? = null,
 )

@@ -25,8 +25,17 @@ class USGSEarthquakeAlertSource(context: Context) :
                 type = AlertType.Earthquake,
                 level = AlertLevel.Event,
                 title = "${it.title} Earthquake",
-                publishedDate = parsedTime
+                publishedDate = parsedTime,
+                sourceSystem = getSystemName()
             )
         }
+    }
+
+    override fun getSystemName(): String {
+        return "USGS Earthquake"
+    }
+
+    override fun isActiveOnly(): Boolean {
+        return false
     }
 }

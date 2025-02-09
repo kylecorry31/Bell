@@ -25,4 +25,12 @@ class USGSWaterAlertSource(context: Context) : RssAlertSource(context) {
             )
         }
     }
+
+    override fun getSystemName(): String {
+        return "USGS Water"
+    }
+
+    override fun isActiveOnly(): Boolean {
+        return false
+    }
 }

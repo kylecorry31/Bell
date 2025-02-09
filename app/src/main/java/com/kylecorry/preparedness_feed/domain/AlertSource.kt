@@ -4,4 +4,6 @@ import java.time.ZonedDateTime
 
 interface AlertSource {
     suspend fun getAlerts(since: ZonedDateTime): List<Alert>
+    fun getSystemName(): String
+    fun isActiveOnly(): Boolean
 }
