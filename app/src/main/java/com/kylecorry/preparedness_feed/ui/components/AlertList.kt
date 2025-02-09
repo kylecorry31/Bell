@@ -1,6 +1,5 @@
 package com.kylecorry.preparedness_feed.ui.components
 
-import android.graphics.Color
 import android.text.util.Linkify
 import androidx.core.text.buildSpannedString
 import androidx.core.text.toSpannable
@@ -9,11 +8,14 @@ import com.kylecorry.andromeda.alerts.Alerts
 import com.kylecorry.andromeda.core.system.Resources
 import com.kylecorry.andromeda.views.list.ListItem
 import com.kylecorry.andromeda.views.list.ListItemTag
+import com.kylecorry.andromeda.views.list.ResourceListIcon
 import com.kylecorry.andromeda.views.reactivity.AndromedaViews.AndromedaList
 import com.kylecorry.andromeda.views.reactivity.AndromedaViews.Component
 import com.kylecorry.andromeda.views.reactivity.ViewAttributes
 import com.kylecorry.preparedness_feed.domain.Alert
 import com.kylecorry.preparedness_feed.ui.FormatService
+import com.kylecorry.preparedness_feed.ui.mappers.AlertLevelMapper
+import com.kylecorry.preparedness_feed.ui.mappers.AlertTypeMapper
 
 class AlertListAttributes : ViewAttributes() {
     var alerts: List<Alert> = emptyList()
@@ -28,14 +30,18 @@ fun AlertList(config: AlertListAttributes.() -> Unit) = Component(config) { attr
 
     val listItems = useMemo(attrs.alerts, attrs.onDelete, formatter, context) {
         val primaryColor = Resources.getAndroidColorAttr(context, android.R.attr.colorPrimary)
+        val secondaryTextColor = Resources.androidTextColorSecondary(context)
         attrs.alerts.map {
             ListItem(
                 it.id,
                 it.title,
                 formatter.formatDateTime(it.publishedDate),
+                icon = ResourceListIcon(
+                    AlertTypeMapper.getIcon(it.type),
+                    secondaryTextColor
+                ),
                 tags = listOf(
-                    ListItemTag(it.type.name, null, primaryColor),
-                    ListItemTag(it.level.name, null, Color.LTGRAY),
+                    ListItemTag(it.level.name, null, AlertLevelMapper.getColor(it.level)),
                 ),
                 longClickAction = {
                     attrs.onDelete?.invoke(it)
