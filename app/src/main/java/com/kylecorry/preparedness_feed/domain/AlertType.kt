@@ -9,5 +9,6 @@ enum class AlertType {
     Health,
     Volcano,
     Fire,
+    Tsunami,
     Other
 }
