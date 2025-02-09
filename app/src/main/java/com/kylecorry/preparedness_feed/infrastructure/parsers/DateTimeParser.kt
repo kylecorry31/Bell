@@ -110,7 +110,8 @@ object DateTimeParser {
 
     private fun parseLocalDate(dateString: String): LocalDate? {
         val patterns = listOf(
-            DateTimeFormatter.ISO_LOCAL_DATE
+            DateTimeFormatter.ISO_LOCAL_DATE,
+            DateTimeFormatter.ofPattern("MMM dd yyyy"),
         )
 
         for (pattern in patterns) {
