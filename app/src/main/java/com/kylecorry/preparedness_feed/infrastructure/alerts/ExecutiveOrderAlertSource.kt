@@ -38,7 +38,9 @@ class ExecutiveOrderAlertSource(context: Context) : RssAlertSource(context) {
             return alert.copy(summary = "", shouldSummarize = false, level = AlertLevel.Noise)
         }
 
-        val content = html.select(".entry-content > p").text()
+        val content = Jsoup.parse(html.select(".entry-content > p").html()).wholeText()
+            .replace(" ", "").split("\n").filter { it.trim().isNotBlank() }
+            .joinToString("\n\n") { it.trim() }
         return alert.copy(summary = content)
     }
 }
