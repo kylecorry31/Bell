@@ -1,4 +1,4 @@
-package com.kylecorry.bell.infrastructure.alerts
+package com.kylecorry.bell.infrastructure.alerts.water
 
 import android.content.Context
 

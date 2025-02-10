@@ -1,9 +1,11 @@
-package com.kylecorry.bell.infrastructure.alerts
+package com.kylecorry.bell.infrastructure.alerts.fire
 
 import android.content.Context
 import com.kylecorry.bell.domain.Alert
 import com.kylecorry.bell.domain.AlertLevel
 import com.kylecorry.bell.domain.AlertType
+import com.kylecorry.bell.infrastructure.alerts.AlertSpecification
+import com.kylecorry.bell.infrastructure.alerts.BaseAlertSource
 import com.kylecorry.bell.infrastructure.parsers.DateTimeParser
 import java.time.ZoneId
 

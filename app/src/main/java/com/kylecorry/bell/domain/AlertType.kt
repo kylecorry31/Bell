@@ -9,7 +9,6 @@ enum class AlertType(val importance: Int) {
     Health(2),
     Volcano(1),
     Fire(1),
-    Tsunami(1),
     Travel(3),
     Economy(3),
     Other(3)

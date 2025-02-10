@@ -1,9 +1,11 @@
-package com.kylecorry.bell.infrastructure.alerts
+package com.kylecorry.bell.infrastructure.alerts.water
 
 import android.content.Context
 import com.kylecorry.bell.domain.Alert
 import com.kylecorry.bell.domain.AlertLevel
 import com.kylecorry.bell.domain.AlertType
+import com.kylecorry.bell.infrastructure.alerts.AlertSpecification
+import com.kylecorry.bell.infrastructure.alerts.BaseAlertSource
 
 class USGSWaterAlertSource(context: Context) : BaseAlertSource(context) {
 

@@ -1,9 +1,11 @@
-package com.kylecorry.bell.infrastructure.alerts
+package com.kylecorry.bell.infrastructure.alerts.economy
 
 import android.content.Context
 import com.kylecorry.bell.domain.Alert
 import com.kylecorry.bell.domain.AlertLevel
 import com.kylecorry.bell.domain.AlertType
+import com.kylecorry.bell.infrastructure.alerts.AlertSpecification
+import com.kylecorry.bell.infrastructure.alerts.BaseAlertSource
 import com.kylecorry.bell.infrastructure.parsers.selectors.Selector
 
 class ConsumerPriceIndexAlertSource(context: Context) : BaseAlertSource(context) {

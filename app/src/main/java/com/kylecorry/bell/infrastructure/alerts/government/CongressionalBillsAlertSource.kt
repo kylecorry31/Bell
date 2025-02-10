@@ -1,10 +1,12 @@
-package com.kylecorry.bell.infrastructure.alerts
+package com.kylecorry.bell.infrastructure.alerts.government
 
 import android.content.Context
 import com.kylecorry.bell.domain.Alert
 import com.kylecorry.bell.domain.AlertLevel
 import com.kylecorry.bell.domain.AlertType
 import com.kylecorry.bell.domain.Constants
+import com.kylecorry.bell.infrastructure.alerts.AlertSpecification
+import com.kylecorry.bell.infrastructure.alerts.BaseAlertSource
 import com.kylecorry.bell.infrastructure.utils.HtmlTextFormatter
 
 class CongressionalBillsAlertSource(context: Context) : BaseAlertSource(context) {
