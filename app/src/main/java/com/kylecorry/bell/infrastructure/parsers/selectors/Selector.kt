@@ -1,5 +1,6 @@
 package com.kylecorry.bell.infrastructure.parsers.selectors
 
+import com.jayway.jsonpath.JsonPath
 import com.kylecorry.andromeda.xml.XMLNode
 import org.jsoup.nodes.Element
 
@@ -49,11 +50,12 @@ data class Selector(
 
 // ======================== Combined ========================
 fun <T> select(element: T, selector: String): List<T> {
+    @Suppress("UNCHECKED_CAST")
     return when (element) {
-        is Element -> select(element, selector) as List<T>
-        is XMLNode -> select(element, selector) as List<T>
-        else -> throw IllegalArgumentException("Unsupported type")
-    }
+        is Element -> selectHtml(element, selector)
+        is XMLNode -> selectXml(element, selector)
+        else -> selectJson(element as Any, selector)
+    } as List<T>
 }
 
 fun <T> select(element: T, selector: Selector): String? {
@@ -61,20 +63,20 @@ fun <T> select(element: T, selector: Selector): String? {
         return selector.mapFn(selector.valueOverride)
     }
     return when (element) {
-        is Element -> select(element, selector)
-        is XMLNode -> select(element, selector)
-        else -> throw IllegalArgumentException("Unsupported type")
+        is Element -> selectHtml(element, selector)
+        is XMLNode -> selectXml(element, selector)
+        else -> selectJson(element as Any, selector)
     }
 }
 
 // ======================== HTML ========================
 
-private fun select(element: Element, selector: String): List<Element> {
+private fun selectHtml(element: Element, selector: String): List<Element> {
     return element.select(selector)
 }
 
-private fun select(element: Element, selector: Selector): String? {
-    val elements = select(element, selector.selector)
+private fun selectHtml(element: Element, selector: Selector): String? {
+    val elements = selectHtml(element, selector.selector)
     val selectedElement = elements.getOrNull(selector.index ?: 0) ?: return null
 
     return selector.mapFn(
@@ -88,7 +90,7 @@ private fun select(element: Element, selector: Selector): String? {
 
 // ======================== XML ========================
 
-private fun select(node: XMLNode, selector: String): List<XMLNode> {
+private fun selectXml(node: XMLNode, selector: String): List<XMLNode> {
     // ID and class selectors are not supported for XML
     val selections = selector.split(" ")
     var current = listOf(node)
@@ -112,8 +114,8 @@ private fun select(node: XMLNode, selector: String): List<XMLNode> {
     return current
 }
 
-private fun select(node: XMLNode, selector: Selector): String? {
-    val elements = select(node, selector.selector)
+private fun selectXml(node: XMLNode, selector: Selector): String? {
+    val elements = selectXml(node, selector.selector)
     val selectedElement = elements.getOrNull(selector.index ?: 0) ?: return null
 
     return selector.mapFn(
@@ -144,4 +146,38 @@ private fun selectNodes(
     })
 
     return matches
+}
+
+// ======================== JSON ========================
+
+private fun selectJson(node: Any, selector: String): List<Any> {
+    val fullSelector = if (selector.startsWith("$")) {
+        selector
+    } else {
+        "$.$selector"
+    }.trimEnd('.')
+    return JsonPath.read(node as String, fullSelector)
+}
+
+private fun selectJson(node: Any, selector: Selector): String? {
+    val fullSelector = (if (selector.selector.startsWith("$")) {
+        selector.selector
+    } else {
+        "$.${selector.selector}"
+    } + if (selector.attribute != null) {
+        ".${selector.attribute}"
+    } else {
+        ""
+    }).trimEnd('.')
+
+    val elements: Any = JsonPath.read(
+        node, fullSelector
+    )
+    val selectedElement = if (elements is List<*>) {
+        elements.getOrNull(selector.index ?: 0)
+    } else {
+        elements
+    } ?: return null
+
+    return selector.mapFn(selectedElement.toString())
 }

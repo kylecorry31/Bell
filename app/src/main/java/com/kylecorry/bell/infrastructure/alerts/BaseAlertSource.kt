@@ -14,17 +14,16 @@ import com.kylecorry.luna.coroutines.onIO
 import org.jsoup.Jsoup
 import java.time.ZoneId
 
-enum class AlertSourceType2 {
+enum class AlertSourceType {
     XML,
-
-    //    JSON,
+    JSON,
     HTML
 }
 
 data class AlertSpecification(
     val sourceSystem: String,
     val url: String,
-    val type: AlertSourceType2,
+    val type: AlertSourceType,
     val items: String,
     val title: Selector,
     val link: Selector,
@@ -60,8 +59,9 @@ abstract class BaseAlertSource(
 
         val alertItems = select(
             when (specification.type) {
-                AlertSourceType2.XML -> XMLConvert.parse(response)
-                AlertSourceType2.HTML -> Jsoup.parse(response)
+                AlertSourceType.XML -> XMLConvert.parse(response)
+                AlertSourceType.HTML -> Jsoup.parse(response)
+                AlertSourceType.JSON -> response
             }, specification.items
         )
 
@@ -115,7 +115,7 @@ abstract class BaseAlertSource(
         return AlertSpecification(
             sourceSystem = sourceSystem,
             url = url,
-            type = AlertSourceType2.XML,
+            type = AlertSourceType.XML,
             items = items,
             title = title,
             link = link,
@@ -148,7 +148,7 @@ abstract class BaseAlertSource(
         return AlertSpecification(
             sourceSystem = sourceSystem,
             url = url,
-            type = AlertSourceType2.XML,
+            type = AlertSourceType.XML,
             items = items,
             title = title,
             link = link,
@@ -181,7 +181,40 @@ abstract class BaseAlertSource(
         return AlertSpecification(
             sourceSystem = sourceSystem,
             url = url,
-            type = AlertSourceType2.HTML,
+            type = AlertSourceType.HTML,
+            items = items,
+            title = title,
+            link = link,
+            uniqueId = uniqueId,
+            publishedDate = publishedDate,
+            summary = summary,
+            additionalAttributes = additionalAttributes,
+            defaultAlertType = defaultAlertType,
+            defaultAlertLevel = defaultAlertLevel,
+            defaultZoneId = defaultZoneId,
+            limit = limit
+        )
+    }
+
+    protected fun json(
+        sourceSystem: String,
+        url: String,
+        items: String,
+        title: Selector,
+        link: Selector,
+        uniqueId: Selector,
+        publishedDate: Selector,
+        summary: Selector,
+        additionalAttributes: Map<String, Selector> = mapOf(),
+        defaultAlertType: AlertType = AlertType.Other,
+        defaultAlertLevel: AlertLevel = AlertLevel.Other,
+        defaultZoneId: ZoneId = ZoneId.systemDefault(),
+        limit: Int? = null,
+    ): AlertSpecification {
+        return AlertSpecification(
+            sourceSystem = sourceSystem,
+            url = url,
+            type = AlertSourceType.JSON,
             items = items,
             title = title,
             link = link,

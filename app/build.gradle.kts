@@ -121,6 +121,10 @@ dependencies {
     // Jsoup
     implementation(libs.jsoup)
 
+    // Gson
+    implementation(libs.gson)
+    implementation(libs.jsonpath)
+
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

@@ -27,6 +27,8 @@ workRuntimeKtx = "2.10.0"
 preferenceKtx = "1.2.1"
 volley = "1.2.1"
 jsoup = "1.18.3"
+gson = "2.12.1"
+jsonpath = "2.9.0"
 
 [libraries]
 androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version.ref = "constraintlayout" }
@@ -73,6 +75,8 @@ sol = { module = "com.kylecorry:sol", version.ref = "sol" }
 luna = { module = "com.kylecorry:luna", version.ref = "luna" }
 volley = { module = "com.android.volley:volley", version.ref = "volley" }
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
+gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
+jsonpath = { module = "com.jayway.jsonpath:json-path", version.ref = "jsonpath" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "androidApplication" }
