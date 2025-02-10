@@ -103,13 +103,15 @@ class AlertUpdater(private val context: Context) {
             USGSEarthquakeAlertSource(context),
             USGSWaterAlertSource(context),
             SWPCAlertSource(context),
-            CDCAlertSource(),
-            USGSVolcanoAlertSource(),
+            CDCAlertSource(context),
+            USGSVolcanoAlertSource(context),
             CongressionalBillsAlertSource(context),
             InciwebWildfireAlertSource(context),
             NationalTsunamiAlertSource(context),
             PacificTsunamiAlertSource(context),
-            TravelAdvisoriesAlertSource(context)
+            // Updated
+            TravelAdvisoryAlertSource(context),
+            ConsumerPriceIndexAlertSource(context),
         )
     }
 

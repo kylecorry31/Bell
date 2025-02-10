@@ -4,9 +4,20 @@ import android.content.Context
 import com.kylecorry.bell.domain.Alert
 import com.kylecorry.bell.domain.AlertLevel
 import com.kylecorry.bell.domain.AlertType
+import com.kylecorry.bell.infrastructure.parsers.selectors.Selector
 
-abstract class TsunamiAlertSource(context: Context) :
-    AtomAlertSource(context, linkSelector = "link[title=Bulletin][href]") {
+abstract class TsunamiAlertSource(context: Context, private val url: String) :
+    BaseAlertSource(context) {
+
+    override fun getSpecification(): AlertSpecification {
+        return atom(
+            "NOAA Tsunami",
+            url,
+            AlertType.Tsunami,
+            AlertLevel.Warning,
+            link = Selector.attr("link[title=Bulletin]", "href"),
+        )
+    }
 
     private val header = "TSUNAMI WARNING CENTER"
 
@@ -37,13 +48,9 @@ abstract class TsunamiAlertSource(context: Context) :
         return "NOAA Tsunami"
     }
 
-    override fun postProcessAlerts(alerts: List<Alert>): List<Alert> {
+    override fun process(alerts: List<Alert>): List<Alert> {
         return alerts.map {
-            it.copy(
-                title = "Tsunami ${it.title}",
-                type = AlertType.Water,
-                level = AlertLevel.Other
-            )
+            it.copy(title = "Tsunami ${it.title}")
         }.filter { alert ->
             locationMap.any { alert.link.contains(it.key) }
         }

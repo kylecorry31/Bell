@@ -4,15 +4,23 @@ import android.content.Context
 import com.kylecorry.bell.domain.Alert
 import com.kylecorry.bell.domain.AlertLevel
 import com.kylecorry.bell.domain.AlertType
-import java.time.ZonedDateTime
+import com.kylecorry.bell.infrastructure.parsers.selectors.Selector
 
 class NationalWeatherServiceAlertSource(context: Context, private val area: String) :
-    AtomAlertSource(context, "cap:event") {
-    override fun getUrl(): String {
-        return "https://api.weather.gov/alerts/active.atom?area=$area"
+    BaseAlertSource(context) {
+
+    override fun getSpecification(): AlertSpecification {
+        return atom(
+            "National Weather Service",
+            "https://api.weather.gov/alerts/active.atom?area=$area",
+            AlertType.Weather,
+            AlertLevel.Warning,
+            title = Selector.text("cap:event"),
+            link = Selector.value("https://alerts.weather.gov/search?area=$area")
+        )
     }
 
-    override fun postProcessAlerts(alerts: List<Alert>): List<Alert> {
+    override fun process(alerts: List<Alert>): List<Alert> {
         return alerts.map {
             it.copy(
                 type = if (it.title.lowercase().contains("red flag")) {
@@ -25,14 +33,8 @@ class NationalWeatherServiceAlertSource(context: Context, private val area: Stri
                         .contains(entry.name, ignoreCase = true)
                 } ?: AlertLevel.Other,
                 useLinkForSummary = false,
-                link = "https://alerts.weather.gov/search?area=$area",
                 uniqueId = it.uniqueId.split("/").last().split(".")[6],
-                sourceSystem = getSystemName()
             )
         }
-    }
-
-    override fun getSystemName(): String {
-        return "National Weather Service"
     }
 }

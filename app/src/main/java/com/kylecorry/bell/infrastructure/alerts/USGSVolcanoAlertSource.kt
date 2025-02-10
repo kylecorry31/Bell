@@ -1,34 +1,34 @@
 package com.kylecorry.bell.infrastructure.alerts
 
-import com.kylecorry.luna.coroutines.onIO
+import android.content.Context
 import com.kylecorry.bell.domain.Alert
 import com.kylecorry.bell.domain.AlertLevel
-import com.kylecorry.bell.domain.AlertSource
 import com.kylecorry.bell.domain.AlertType
-import com.kylecorry.bell.infrastructure.parsers.DateTimeParser
-import org.jsoup.Jsoup
+import com.kylecorry.bell.infrastructure.parsers.selectors.Selector
 import java.time.ZoneId
-import java.time.ZonedDateTime
 
-class USGSVolcanoAlertSource : AlertSource {
+class USGSVolcanoAlertSource(context: Context) : BaseAlertSource(context) {
+    override fun getSpecification(): AlertSpecification {
+        return html(
+            "USGS Volcanoes",
+            "https://www.usgs.gov/programs/VHP/volcano-updates",
+            items = ".usgs-vol-up-vonas",
+            title = Selector.text("b"),
+            link = Selector.value("https://www.usgs.gov/programs/VHP/volcano-updates"),
+            uniqueId = Selector.text("b"),
+            publishedDate = Selector.text(".hans-td:nth-child(2)") { it?.replace("Z", "") },
+            summary = Selector.text(".hans-td span"),
+            additionalAttributes = mapOf(
+                "colorCode" to Selector.text(".hans-td:nth-child(2)", index = 2)
+            ),
+            defaultZoneId = ZoneId.of("UTC"),
+            defaultAlertType = AlertType.Volcano
+        )
+    }
 
-    override suspend fun getAlerts(): List<Alert> = onIO {
-        val document = Jsoup.connect("https://www.usgs.gov/programs/VHP/volcano-updates").get()
-        val alerts = document.select(".usgs-vol-up-vonas")
-
-        alerts.mapNotNull {
-            val volcanoNameElement = it.select("b").firstOrNull() ?: return@mapNotNull null
-
-            val dateElement =
-                it.select(".hans-td:nth-child(2)").firstOrNull() ?: return@mapNotNull null
-
-            val colorCodeElement = it.select(".hans-td:nth-child(2)")[2] ?: return@mapNotNull null
-
-            // TODO: Parse location and filter based on area
-
-            val summary = it.select(".hans-td span").text()
-
-            val colorCode = colorCodeElement.text().trim()
+    override fun process(alerts: List<Alert>): List<Alert> {
+        return alerts.mapNotNull {
+            val colorCode = it.additionalAttributes["colorCode"] ?: return@mapNotNull null
             val level = when (colorCode.lowercase()) {
                 "yellow" -> AlertLevel.Advisory
                 "orange" -> AlertLevel.Watch
@@ -40,29 +40,11 @@ class USGSVolcanoAlertSource : AlertSource {
                 return@mapNotNull null
             }
 
-            val volcano = volcanoNameElement.text()
-            val title = "Volcano ${level.name} for $volcano"
-
-            val parsedDate =
-                DateTimeParser.parse(dateElement.text().replace("Z", ""), ZoneId.of("UTC"))
-                    ?: return@mapNotNull null
-
-            Alert(
-                0,
-                title,
-                getSystemName(),
-                AlertType.Volcano,
-                level,
-                "https://www.usgs.gov/programs/VHP/volcano-updates",
-                volcano,
-                parsedDate,
-                summary = summary,
+            it.copy(
+                title = "Volcano ${level.name} for ${it.title}",
+                level = level,
                 useLinkForSummary = false
             )
         }
-    }
-
-    override fun getSystemName(): String {
-        return "USGS Volcanoes"
     }
 }

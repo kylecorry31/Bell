@@ -6,27 +6,24 @@ import com.kylecorry.bell.domain.AlertLevel
 import com.kylecorry.bell.domain.AlertType
 import com.kylecorry.bell.domain.Constants
 import com.kylecorry.bell.infrastructure.utils.HtmlTextFormatter
-import java.time.ZonedDateTime
 
-class CongressionalBillsAlertSource(context: Context) : RssAlertSource(context) {
-    override fun getUrl(): String {
-        return "https://www.congress.gov/rss/presented-to-president.xml"
+class CongressionalBillsAlertSource(context: Context) : BaseAlertSource(context) {
+    override fun getSpecification(): AlertSpecification {
+        return rss(
+            "Congress",
+            "https://www.congress.gov/rss/presented-to-president.xml",
+            AlertType.Government,
+            AlertLevel.Announcement
+        )
     }
 
-    override fun getSystemName(): String {
-        return "Congress"
-    }
-
-    override fun postProcessAlerts(alerts: List<Alert>): List<Alert> {
+    override fun process(alerts: List<Alert>): List<Alert> {
         return alerts.mapNotNull {
             if (it.link.contains("concurrent-resolution")) {
                 return@mapNotNull null
             }
             it.copy(
-                type = AlertType.Government,
-                level = AlertLevel.Announcement,
                 title = "Bill: ${it.title}",
-                sourceSystem = getSystemName(),
                 expirationDate = it.publishedDate.plusDays(Constants.DEFAULT_EXPIRATION_DAYS)
             )
         }

@@ -8,25 +8,24 @@ import com.kylecorry.bell.domain.Constants
 import com.kylecorry.bell.infrastructure.utils.HtmlTextFormatter
 import org.jsoup.Jsoup
 
-class WhiteHousePresidentalActionsAlertSource(context: Context) : RssAlertSource(context) {
-    override fun getUrl(): String {
-        return "https://www.whitehouse.gov/presidential-actions/feed/"
-    }
-
-    override fun postProcessAlerts(alerts: List<Alert>): List<Alert> {
+class WhiteHousePresidentalActionsAlertSource(context: Context) : BaseAlertSource(context) {
+    override fun process(alerts: List<Alert>): List<Alert> {
         return alerts.map {
             it.copy(
-                type = AlertType.Government,
-                level = AlertLevel.Announcement,
-                sourceSystem = getSystemName(),
                 title = "Executive Order: ${it.title}",
                 expirationDate = it.publishedDate.plusDays(Constants.DEFAULT_EXPIRATION_DAYS),
             )
-        }.distinctBy { it.title }.take(10)
+        }.distinctBy { it.title }
     }
 
-    override fun getSystemName(): String {
-        return "White House"
+    override fun getSpecification(): AlertSpecification {
+        return rss(
+            "White House",
+            "https://www.whitehouse.gov/presidential-actions/feed/",
+            AlertType.Government,
+            AlertLevel.Announcement,
+            limit = 10
+        )
     }
 
     override fun updateFromFullText(alert: Alert, fullText: String): Alert {

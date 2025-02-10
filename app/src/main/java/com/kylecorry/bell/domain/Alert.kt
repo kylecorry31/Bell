@@ -15,7 +15,8 @@ data class Alert(
     val summary: String,
     val useLinkForSummary: Boolean = true,
     val shouldSummarize: Boolean = true,
-    val canSkipDownloadIfOld: Boolean = true
+    val canSkipDownloadIfOld: Boolean = true,
+    val additionalAttributes: Map<String, String> = mapOf()
 ) {
     fun isExpired(time: ZonedDateTime = ZonedDateTime.now()): Boolean {
         return expirationDate?.isBefore(time) ?: false

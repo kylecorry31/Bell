@@ -5,10 +5,8 @@ import com.kylecorry.bell.domain.Alert
 import com.kylecorry.bell.domain.AlertLevel
 import com.kylecorry.bell.domain.AlertType
 import com.kylecorry.bell.infrastructure.utils.HtmlTextFormatter
-import java.time.ZonedDateTime
 
-class TravelAdvisoriesAlertSource(context: Context) : RssAlertSource(context) {
-
+class TravelAdvisoryAlertSource(context: Context) : BaseAlertSource(context) {
     private val levelRegex = Regex("Level (\\d)")
     private val countryRegex = Regex("(.*)\\s+-\\s+Level")
     private val levelDescriptions = mapOf(
@@ -17,15 +15,15 @@ class TravelAdvisoriesAlertSource(context: Context) : RssAlertSource(context) {
         4 to "Do Not Travel to"
     )
 
-    override fun getUrl(): String {
-        return "https://travel.state.gov/_res/rss/TAsTWs.xml"
+    override fun getSpecification(): AlertSpecification {
+        return rss(
+            "State Department Travel Advisories",
+            "https://travel.state.gov/_res/rss/TAsTWs.xml",
+            AlertType.Travel
+        )
     }
 
-    override fun getSystemName(): String {
-        return "State Department Travel Advisories"
-    }
-
-    override fun postProcessAlerts(alerts: List<Alert>): List<Alert> {
+    override fun process(alerts: List<Alert>): List<Alert> {
         return alerts.mapNotNull {
 
             val level = levelRegex.find(it.title)?.groupValues?.get(1)?.toIntOrNull()
@@ -45,9 +43,7 @@ class TravelAdvisoriesAlertSource(context: Context) : RssAlertSource(context) {
             val country = countryRegex.find(it.title)?.groupValues?.get(1) ?: ""
 
             it.copy(
-                type = AlertType.Travel,
                 level = alertLevel,
-                sourceSystem = getSystemName(),
                 title = "$description $country",
                 summary = HtmlTextFormatter.getText(it.summary)
             )

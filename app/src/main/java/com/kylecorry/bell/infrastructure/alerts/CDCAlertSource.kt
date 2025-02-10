@@ -1,61 +1,42 @@
 package com.kylecorry.bell.infrastructure.alerts
 
+import android.content.Context
 import com.kylecorry.bell.domain.Alert
 import com.kylecorry.bell.domain.AlertLevel
-import com.kylecorry.bell.domain.AlertSource
 import com.kylecorry.bell.domain.AlertType
 import com.kylecorry.bell.domain.Constants
-import com.kylecorry.bell.infrastructure.parsers.DateTimeParser
+import com.kylecorry.bell.infrastructure.parsers.selectors.Selector
 import com.kylecorry.bell.infrastructure.utils.HtmlTextFormatter
-import com.kylecorry.luna.coroutines.onIO
-import org.jsoup.Jsoup
 
-class CDCAlertSource : AlertSource {
-
-    override suspend fun getAlerts(): List<Alert> = onIO {
-        val document = Jsoup.connect("https://www.cdc.gov/han/index.html").get()
-        val alerts = document.select(".bg-quaternary .card")
-
-        alerts.mapNotNull {
-            val titleElement = it.select("a")
-            if (titleElement.isEmpty()) {
-                return@mapNotNull null
-            }
-
-            val dateElement = it.select("p")
-            if (dateElement.isEmpty()) {
-                return@mapNotNull null
-            }
-
-            val title = titleElement.text().let {
-                if (it.contains("Health Alert Network (HAN)")) {
-                    it.substringAfter("– ")
-                } else {
-                    it
-                }
-            }
-            val date = dateElement.text()
-            val link = titleElement.attr("href")
-
-            val parsedDate = DateTimeParser.parse(date) ?: return@mapNotNull null
-
-            Alert(
-                0,
-                title,
-                getSystemName(),
-                AlertType.Health,
-                AlertLevel.Warning,
-                "https://www.cdc.gov$link",
-                link.split("/").last().replace(".html", ""),
-                parsedDate,
-                parsedDate.plusDays(Constants.DEFAULT_EXPIRATION_DAYS),
-                ""
-            )
-        }
+class CDCAlertSource(context: Context) : BaseAlertSource(context) {
+    override fun getSpecification(): AlertSpecification {
+        return html(
+            "CDC",
+            "https://www.cdc.gov/han/index.html",
+            items = ".bg-quaternary .card",
+            title = Selector.text("a"),
+            link = Selector.attr("a", "href"),
+            uniqueId = Selector.attr("a", "href") { it?.split("/")?.last()?.replace(".html", "") },
+            publishedDate = Selector.text("p"),
+            summary = Selector.value(""),
+            defaultAlertType = AlertType.Health
+        )
     }
 
-    override fun getSystemName(): String {
-        return "CDC"
+    override fun process(alerts: List<Alert>): List<Alert> {
+        return alerts.map {
+            val title = if (it.title.contains("Health Alert Network (HAN)")) {
+                it.title.substringAfter("– ")
+            } else {
+                it.title
+            }
+
+            it.copy(
+                title = title,
+                link = "https://www.cdc.gov${it.link}",
+                expirationDate = it.publishedDate.plusDays(Constants.DEFAULT_EXPIRATION_DAYS)
+            )
+        }
     }
 
     override fun updateFromFullText(alert: Alert, fullText: String): Alert {

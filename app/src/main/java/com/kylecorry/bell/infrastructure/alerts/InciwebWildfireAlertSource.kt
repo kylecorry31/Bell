@@ -7,7 +7,7 @@ import com.kylecorry.bell.domain.AlertType
 import com.kylecorry.bell.infrastructure.parsers.DateTimeParser
 import java.time.ZoneId
 
-class InciwebWildfireAlertSource(context: Context) : RssAlertSource(context) {
+class InciwebWildfireAlertSource(context: Context) : BaseAlertSource(context) {
 
     private val lastUpdatedDateRegex = Regex("Last updated: (\\d{4}-\\d{2}-\\d{2})")
     private val stateRegex = Regex("State: (\\w+)")
@@ -15,17 +15,17 @@ class InciwebWildfireAlertSource(context: Context) : RssAlertSource(context) {
 
     private val containedText = "This page will no longer be updated"
 
-    override fun getUrl(): String {
-        return "https://inciweb.wildfire.gov/incidents/rss.xml"
+    override fun getSpecification(): AlertSpecification {
+        return rss(
+            "Inciweb Wildfire",
+            "https://inciweb.wildfire.gov/incidents/rss.xml",
+            AlertType.Fire,
+            AlertLevel.Warning
+        )
     }
 
-    override fun getSystemName(): String {
-        return "Inciweb Wildfire"
-    }
-
-    override fun postProcessAlerts(alerts: List<Alert>): List<Alert> {
+    override fun process(alerts: List<Alert>): List<Alert> {
         return alerts.mapNotNull {
-
             if (!it.summary.contains("type of incident is Wildfire", true)) {
                 return@mapNotNull null
             }
@@ -45,9 +45,6 @@ class InciwebWildfireAlertSource(context: Context) : RssAlertSource(context) {
 
             it.copy(
                 title = title,
-                type = AlertType.Fire,
-                level = AlertLevel.Warning,
-                sourceSystem = getSystemName(),
                 useLinkForSummary = false,
                 publishedDate = lastUpdated,
                 expirationDate = null

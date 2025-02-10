@@ -1,6 +1,7 @@
 package com.kylecorry.bell.infrastructure.utils
 
 import org.jsoup.Jsoup
+import org.jsoup.nodes.Element
 
 object HtmlTextFormatter {
 
@@ -11,7 +12,11 @@ object HtmlTextFormatter {
         } else {
             html.html()
         }
-        return Jsoup.parse(updatedHtml).wholeText()
+        return getText(Jsoup.parse(updatedHtml))
+    }
+
+    fun getText(element: Element): String {
+        return element.wholeText()
             .replace(" ", "").split("\n").filter { it.trim().isNotBlank() }
             .joinToString("\n\n") { it.trim() }
     }
