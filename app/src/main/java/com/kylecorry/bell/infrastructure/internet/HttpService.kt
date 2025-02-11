@@ -8,12 +8,13 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
-class HttpService(private val context: Context) {
+class HttpService(context: Context) {
+
+    private val queue = Volley.newRequestQueue(context)
 
     suspend fun get(url: String, headers: Map<String, String> = emptyMap()): String = onIO {
         suspendCoroutine {
             // Use Volley to make the request
-            val queue = Volley.newRequestQueue(context)
             val request = object : StringRequest(Method.GET, url, { response ->
                 it.resume(response)
             }, { error ->
@@ -31,7 +32,7 @@ class HttpService(private val context: Context) {
         onIO {
             suspendCoroutine {
                 // Use Volley to make the request
-                val queue = Volley.newRequestQueue(context)
+//                val queue = Volley.newRequestQueue(context)
                 val request = object : StringRequest(Method.POST, url, { response ->
                     it.resume(response)
                 }, { error ->

@@ -7,6 +7,7 @@ import com.kylecorry.bell.domain.Alert
 import com.kylecorry.bell.domain.AlertSource
 import com.kylecorry.bell.infrastructure.alerts.earthquake.USGSEarthquakeAlertSource
 import com.kylecorry.bell.infrastructure.alerts.economy.ConsumerPriceIndexAlertSource
+import com.kylecorry.bell.infrastructure.alerts.economy.HeatingOilPropanePricesAlertSource
 import com.kylecorry.bell.infrastructure.alerts.fire.InciwebWildfireAlertSource
 import com.kylecorry.bell.infrastructure.alerts.government.CongressionalBillsAlertSource
 import com.kylecorry.bell.infrastructure.alerts.government.WhiteHousePresidentalActionsAlertSource
@@ -134,6 +135,7 @@ class AlertUpdater(private val context: Context) {
             ConsumerPriceIndexAlertSource(context),
             // TODO: This always times out
 //            GasolineDieselPricesAlertSource(context)
+//            HeatingOilPropanePricesAlertSource(context)
         )
     }
 
