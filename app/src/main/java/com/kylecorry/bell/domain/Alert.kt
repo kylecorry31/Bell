@@ -14,6 +14,8 @@ data class Alert(
     val publishedDate: ZonedDateTime,
     val expirationDate: ZonedDateTime? = null,
     val summary: String,
+    val fullText: String? = null,
+    val llmSummary: String? = null,
     // TODO: Intermediates - move to a separate model
     val useLinkForSummary: Boolean = true,
     val shouldSummarize: Boolean = true,

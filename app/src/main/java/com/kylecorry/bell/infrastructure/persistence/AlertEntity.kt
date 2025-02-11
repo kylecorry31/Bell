@@ -35,7 +35,11 @@ data class AlertEntity(
     @ColumnInfo(name = "expiration_date")
     var expirationDate: Instant? = null,
     @ColumnInfo(name = "update_date")
-    var updateDate: Instant = Instant.now()
+    var updateDate: Instant = Instant.now(),
+    @ColumnInfo(name = "full_text")
+    var fullText: String? = null,
+    @ColumnInfo(name = "llm_summary")
+    var llmSummary: String? = null,
 ) {
     fun toAlert(): Alert {
         return Alert(
@@ -50,6 +54,8 @@ data class AlertEntity(
             publishedDate.atZone(ZoneId.systemDefault()),
             expirationDate?.atZone(ZoneId.systemDefault()),
             summary,
+            fullText,
+            llmSummary
         )
     }
 
@@ -66,7 +72,9 @@ data class AlertEntity(
                 alert.publishedDate.toInstant(),
                 alert.summary,
                 alert.expirationDate?.toInstant(),
-                alert.updateDate.toInstant()
+                alert.updateDate.toInstant(),
+                alert.fullText,
+                alert.llmSummary
             )
         }
     }

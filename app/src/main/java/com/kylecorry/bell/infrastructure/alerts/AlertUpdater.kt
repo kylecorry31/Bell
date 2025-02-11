@@ -25,6 +25,7 @@ import com.kylecorry.bell.infrastructure.alerts.weather.NationalWeatherServiceAl
 import com.kylecorry.bell.infrastructure.internet.WebPageDownloader
 import com.kylecorry.bell.infrastructure.persistence.AlertRepo
 import com.kylecorry.bell.infrastructure.persistence.UserPreferences
+import com.kylecorry.bell.infrastructure.summarization.Gemini
 import com.kylecorry.bell.infrastructure.utils.ParallelCoroutineRunner
 import com.kylecorry.luna.coroutines.onIO
 import java.time.ZonedDateTime
@@ -33,6 +34,7 @@ class AlertUpdater(private val context: Context) {
 
     private val repo = AlertRepo.getInstance(context)
     private val preferences = UserPreferences(context)
+    private val gemini = Gemini(context, preferences.geminiApiKey)
     private val pageDownloader = WebPageDownloader(context)
 
     suspend fun update(
@@ -162,6 +164,13 @@ class AlertUpdater(private val context: Context) {
         val newAlert = source?.updateFromFullText(alert, fullText) ?: alert
         val id = repo.upsert(newAlert)
         newAlert.copy(id = id)
+    }
+
+    suspend fun generateAISummary(alert: Alert): Alert {
+        val summary = gemini.summarize(alert.fullText ?: alert.summary)
+        val newAlert = alert.copy(llmSummary = summary)
+        val id = repo.upsert(newAlert)
+        return newAlert.copy(id = id)
     }
 
     private fun isOld(alert: Alert): Boolean {
