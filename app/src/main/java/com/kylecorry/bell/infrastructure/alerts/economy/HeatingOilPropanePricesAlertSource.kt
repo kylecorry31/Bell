@@ -44,7 +44,6 @@ class HeatingOilPropanePricesAlertSource(context: Context) : BaseAlertSource(con
                 oilPrice?.let { price ->
                     it.copy(
                         title = "Oil: ${price.roundPlaces(2)} (US Average)",
-                        shouldSummarize = false,
                         useLinkForSummary = false,
                         summary = summary,
                         uniqueId = "oil"
@@ -53,7 +52,6 @@ class HeatingOilPropanePricesAlertSource(context: Context) : BaseAlertSource(con
                 propanePrice?.let { price ->
                     it.copy(
                         title = "Propane: ${price.roundPlaces(2)} (US Average)",
-                        shouldSummarize = false,
                         useLinkForSummary = false,
                         summary = summary,
                         uniqueId = "propane"

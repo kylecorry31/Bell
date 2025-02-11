@@ -71,7 +71,6 @@ class BLSSummaryAlertSource(context: Context) : BaseAlertSource(context) {
                         summary = "",
                         link = cpiLink ?: it.link,
                         uniqueId = "cpi",
-                        shouldSummarize = false,
                         useLinkForSummary = false
                     )
                 },
@@ -81,7 +80,6 @@ class BLSSummaryAlertSource(context: Context) : BaseAlertSource(context) {
                         summary = "",
                         link = unemploymentRateLink ?: it.link,
                         uniqueId = "unemployment_rate",
-                        shouldSummarize = false,
                         useLinkForSummary = false
                     )
                 },
@@ -91,7 +89,6 @@ class BLSSummaryAlertSource(context: Context) : BaseAlertSource(context) {
                         summary = "",
                         link = payrollEmploymentLink ?: it.link,
                         uniqueId = "payroll_employment",
-                        shouldSummarize = false,
                         useLinkForSummary = false
                     )
                 },
@@ -101,7 +98,6 @@ class BLSSummaryAlertSource(context: Context) : BaseAlertSource(context) {
                         summary = "",
                         link = averageHourlyEarningsLink ?: it.link,
                         uniqueId = "average_hourly_earnings",
-                        shouldSummarize = false,
                         useLinkForSummary = false
                     )
                 },
@@ -111,7 +107,6 @@ class BLSSummaryAlertSource(context: Context) : BaseAlertSource(context) {
                         summary = "",
                         link = producerPriceIndexLink ?: it.link,
                         uniqueId = "producer_price_index",
-                        shouldSummarize = false,
                         useLinkForSummary = false
                     )
                 },
@@ -121,7 +116,6 @@ class BLSSummaryAlertSource(context: Context) : BaseAlertSource(context) {
                         summary = "",
                         link = employmentCostIndexLink ?: it.link,
                         uniqueId = "employment_cost_index",
-                        shouldSummarize = false,
                         useLinkForSummary = false
                     )
                 },
@@ -131,7 +125,6 @@ class BLSSummaryAlertSource(context: Context) : BaseAlertSource(context) {
                         summary = "",
                         link = productivityLink ?: it.link,
                         uniqueId = "productivity",
-                        shouldSummarize = false,
                         useLinkForSummary = false
                     )
                 },
@@ -141,7 +134,6 @@ class BLSSummaryAlertSource(context: Context) : BaseAlertSource(context) {
                         summary = "",
                         link = importPricesLink ?: it.link,
                         uniqueId = "import_prices",
-                        shouldSummarize = false,
                         useLinkForSummary = false
                     )
                 },
@@ -151,7 +143,6 @@ class BLSSummaryAlertSource(context: Context) : BaseAlertSource(context) {
                         summary = "",
                         link = exportPricesLink ?: it.link,
                         uniqueId = "export_prices",
-                        shouldSummarize = false,
                         useLinkForSummary = false
                     )
                 }

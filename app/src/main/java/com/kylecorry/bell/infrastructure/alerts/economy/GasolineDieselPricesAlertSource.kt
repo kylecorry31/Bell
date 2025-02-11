@@ -44,7 +44,6 @@ class GasolineDieselPricesAlertSource(context: Context) : BaseAlertSource(contex
                 gasPrice?.let { price ->
                     it.copy(
                         title = "Gasoline: ${price.roundPlaces(2)} (US Average)",
-                        shouldSummarize = false,
                         useLinkForSummary = false,
                         summary = summary,
                         uniqueId = "gasoline"
@@ -53,7 +52,6 @@ class GasolineDieselPricesAlertSource(context: Context) : BaseAlertSource(contex
                 dieselPrice?.let { price ->
                     it.copy(
                         title = "Diesel: ${price.roundPlaces(2)} (US Average)",
-                        shouldSummarize = false,
                         useLinkForSummary = false,
                         summary = summary,
                         uniqueId = "diesel"

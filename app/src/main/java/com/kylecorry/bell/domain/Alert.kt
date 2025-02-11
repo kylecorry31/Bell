@@ -18,8 +18,7 @@ data class Alert(
     val llmSummary: String? = null,
     // TODO: Intermediates - move to a separate model
     val useLinkForSummary: Boolean = true,
-    val shouldSummarize: Boolean = true,
-    val canSkipDownloadIfOld: Boolean = true,
+    val isSummaryDownloadRequired: Boolean = false,
     val summaryUpdateIntervalDays: Long? = null,
     val additionalAttributes: Map<String, String> = mapOf()
 ) {
@@ -28,6 +27,11 @@ data class Alert(
     }
 
     fun requiresSummaryUpdate(time: ZonedDateTime = ZonedDateTime.now()): Boolean {
+        // Summary download isn't required
+        if (!isSummaryDownloadRequired) {
+            return false
+        }
+
         // Never load a summary for an ignored alert
         if (level == AlertLevel.Ignored) {
             return false
@@ -38,11 +42,6 @@ data class Alert(
             return false
         }
 
-        // If the alert is new and has a summary update interval, update the summary
-        if (id == 0L && summaryUpdateIntervalDays != null) {
-            return true
-        }
-
         // If an update interval is set and the summary is old, update the summary
         if (summaryUpdateIntervalDays != null && updateDate.plusDays(summaryUpdateIntervalDays)
                 .isBefore(time)
@@ -50,17 +49,7 @@ data class Alert(
             return true
         }
 
-        // The alert is not new, and the above conditions are not met, so don't update the summary
-        if (id != 0L) {
-            return false
-        }
-
-        // The download can't be skipped
-        if (!canSkipDownloadIfOld) {
-            return true
-        }
-
-        // Otherwise, only load summaries for newer alerts
-        return publishedDate.isAfter(ZonedDateTime.now().minusDays(7))
+        // Only load for new alerts
+        return id == 0L
     }
 }

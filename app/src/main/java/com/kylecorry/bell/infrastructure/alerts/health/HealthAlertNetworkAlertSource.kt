@@ -39,7 +39,8 @@ class HealthAlertNetworkAlertSource(context: Context) : BaseAlertSource(context)
             it.copy(
                 title = "Health Alert: $title",
                 link = it.link.replace("emergency.", "www."),
-                expirationDate = it.publishedDate.plusDays(Constants.DEFAULT_EXPIRATION_DAYS)
+                expirationDate = it.publishedDate.plusDays(Constants.DEFAULT_EXPIRATION_DAYS),
+                isSummaryDownloadRequired = true
             )
         }
     }

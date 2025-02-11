@@ -9,7 +9,6 @@ import com.kylecorry.bell.domain.SourceSystem
 import com.kylecorry.bell.infrastructure.alerts.AlertSpecification
 import com.kylecorry.bell.infrastructure.alerts.BaseAlertSource
 import com.kylecorry.bell.infrastructure.parsers.DateTimeParser
-import com.kylecorry.bell.infrastructure.utils.HtmlTextFormatter
 import org.jsoup.Jsoup
 import java.time.ZoneId
 
@@ -57,7 +56,8 @@ class InciwebWildfireAlertSource(context: Context) : BaseAlertSource(context) {
                 publishedDate = lastUpdated,
                 expirationDate = null,
                 link = it.link.replace("http://", "https://"),
-                summaryUpdateIntervalDays = Constants.DEFAULT_EXPIRATION_DAYS
+                summaryUpdateIntervalDays = Constants.DEFAULT_EXPIRATION_DAYS,
+                isSummaryDownloadRequired = true
             )
         }
     }
@@ -73,7 +73,6 @@ class InciwebWildfireAlertSource(context: Context) : BaseAlertSource(context) {
             return alert.copy(
                 level = AlertLevel.Ignored,
                 useLinkForSummary = false,
-                shouldSummarize = false
             )
         }
 

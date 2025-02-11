@@ -29,7 +29,7 @@ class USOutbreaksAlertSource(context: Context) : BaseAlertSource(context) {
 
             it.copy(
                 title = cleanedTitle,
-                canSkipDownloadIfOld = false
+                isSummaryDownloadRequired = true
             )
         }
     }

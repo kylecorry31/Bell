@@ -49,7 +49,7 @@ abstract class TsunamiAlertSource(context: Context, private val url: String) :
 
     override fun process(alerts: List<Alert>): List<Alert> {
         return alerts.map {
-            it.copy(title = "Tsunami ${it.title}")
+            it.copy(title = "Tsunami ${it.title}", isSummaryDownloadRequired = true)
         }.filter { alert ->
             locationMap.any { alert.link.contains(it.key) }
         }

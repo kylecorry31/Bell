@@ -17,6 +17,7 @@ class WhiteHousePresidentialActionsAlertSource(context: Context) : BaseAlertSour
             it.copy(
                 title = "Executive Order: ${it.title}",
                 expirationDate = it.publishedDate.plusDays(Constants.DEFAULT_EXPIRATION_DAYS),
+                isSummaryDownloadRequired = true
             )
         }.distinctBy { it.title }
     }
@@ -36,7 +37,7 @@ class WhiteHousePresidentialActionsAlertSource(context: Context) : BaseAlertSour
         val type = html.select(".wp-block-whitehouse-topper__meta--byline").text().trim()
 
         if (type.lowercase() != "executive order") {
-            return alert.copy(summary = "", shouldSummarize = false, level = AlertLevel.Ignored)
+            return alert.copy(summary = "", level = AlertLevel.Ignored)
         }
 
         val content = HtmlTextFormatter.getText(fullText, ".entry-content > p")
