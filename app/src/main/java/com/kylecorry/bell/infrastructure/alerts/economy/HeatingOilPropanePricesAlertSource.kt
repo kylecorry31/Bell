@@ -4,6 +4,7 @@ import android.content.Context
 import com.kylecorry.bell.domain.Alert
 import com.kylecorry.bell.domain.AlertLevel
 import com.kylecorry.bell.domain.AlertType
+import com.kylecorry.bell.domain.SourceSystem
 import com.kylecorry.bell.infrastructure.alerts.AlertSpecification
 import com.kylecorry.bell.infrastructure.alerts.BaseAlertSource
 import com.kylecorry.bell.infrastructure.parsers.selectors.Selector
@@ -18,7 +19,7 @@ class HeatingOilPropanePricesAlertSource(context: Context) : BaseAlertSource(con
 
     override fun getSpecification(): AlertSpecification {
         return rss(
-            "EIA",
+            SourceSystem.EIAHeatingOilPrices,
             "https://www.eia.gov/petroleum/heatingoilpropane/includes/hopu_rss.xml",
             AlertType.Economy,
             AlertLevel.Announcement,

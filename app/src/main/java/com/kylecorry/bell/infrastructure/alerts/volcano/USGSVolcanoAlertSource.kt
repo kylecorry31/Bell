@@ -4,6 +4,7 @@ import android.content.Context
 import com.kylecorry.bell.domain.Alert
 import com.kylecorry.bell.domain.AlertLevel
 import com.kylecorry.bell.domain.AlertType
+import com.kylecorry.bell.domain.SourceSystem
 import com.kylecorry.bell.infrastructure.alerts.AlertSpecification
 import com.kylecorry.bell.infrastructure.alerts.BaseAlertSource
 import com.kylecorry.bell.infrastructure.parsers.selectors.Selector
@@ -12,7 +13,7 @@ class USGSVolcanoAlertSource(context: Context) : BaseAlertSource(context) {
 
     override fun getSpecification(): AlertSpecification {
         return json(
-            "USGS Volcanoes",
+            SourceSystem.USGSVolcano,
             "https://volcanoes.usgs.gov/vsc/api/volcanoApi/elevated",
             items = "$",
             title = Selector.text("vName"),

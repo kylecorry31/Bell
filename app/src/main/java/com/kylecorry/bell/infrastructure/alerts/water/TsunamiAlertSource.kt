@@ -4,6 +4,7 @@ import android.content.Context
 import com.kylecorry.bell.domain.Alert
 import com.kylecorry.bell.domain.AlertLevel
 import com.kylecorry.bell.domain.AlertType
+import com.kylecorry.bell.domain.SourceSystem
 import com.kylecorry.bell.infrastructure.alerts.AlertSpecification
 import com.kylecorry.bell.infrastructure.alerts.BaseAlertSource
 import com.kylecorry.bell.infrastructure.parsers.selectors.Selector
@@ -13,7 +14,7 @@ abstract class TsunamiAlertSource(context: Context, private val url: String) :
 
     override fun getSpecification(): AlertSpecification {
         return atom(
-            "NOAA Tsunami",
+            SourceSystem.NOAATsunami,
             url,
             AlertType.Water,
             AlertLevel.Warning,
@@ -45,10 +46,6 @@ abstract class TsunamiAlertSource(context: Context, private val url: String) :
         "NO LONGER A TSUNAMI THREAT",
         "FINAL TSUNAMI THREAT MESSAGE"
     )
-
-    override fun getSystemName(): String {
-        return "NOAA Tsunami"
-    }
 
     override fun process(alerts: List<Alert>): List<Alert> {
         return alerts.map {

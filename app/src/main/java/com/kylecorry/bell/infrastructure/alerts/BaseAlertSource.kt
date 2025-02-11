@@ -6,6 +6,7 @@ import com.kylecorry.bell.domain.Alert
 import com.kylecorry.bell.domain.AlertLevel
 import com.kylecorry.bell.domain.AlertSource
 import com.kylecorry.bell.domain.AlertType
+import com.kylecorry.bell.domain.SourceSystem
 import com.kylecorry.bell.infrastructure.internet.HttpService
 import com.kylecorry.bell.infrastructure.parsers.DateTimeParser
 import com.kylecorry.bell.infrastructure.parsers.selectors.Selector
@@ -14,6 +15,7 @@ import com.kylecorry.luna.coroutines.onIO
 import org.jsoup.Jsoup
 import java.time.ZoneId
 import java.time.ZonedDateTime
+import javax.xml.transform.Source
 
 enum class AlertSourceType {
     XML,
@@ -22,7 +24,7 @@ enum class AlertSourceType {
 }
 
 data class AlertSpecification(
-    val sourceSystem: String,
+    val sourceSystem: SourceSystem,
     val url: String,
     val type: AlertSourceType,
     val items: String,
@@ -113,12 +115,12 @@ abstract class BaseAlertSource(
         }
     }
 
-    override fun getSystemName(): String {
+    override fun getSystemName(): SourceSystem {
         return getSpecification().sourceSystem
     }
 
     protected fun rss(
-        sourceSystem: String,
+        sourceSystem: SourceSystem,
         url: String,
         defaultAlertType: AlertType = AlertType.Other,
         defaultAlertLevel: AlertLevel = AlertLevel.Other,
@@ -155,7 +157,7 @@ abstract class BaseAlertSource(
     }
 
     protected fun atom(
-        sourceSystem: String,
+        sourceSystem: SourceSystem,
         url: String,
         defaultAlertType: AlertType = AlertType.Other,
         defaultAlertLevel: AlertLevel = AlertLevel.Other,
@@ -192,7 +194,7 @@ abstract class BaseAlertSource(
     }
 
     protected fun html(
-        sourceSystem: String,
+        sourceSystem: SourceSystem,
         url: String,
         items: String,
         title: Selector,
@@ -229,7 +231,7 @@ abstract class BaseAlertSource(
     }
 
     protected fun json(
-        sourceSystem: String,
+        sourceSystem: SourceSystem,
         url: String,
         items: String,
         title: Selector,

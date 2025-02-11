@@ -4,6 +4,7 @@ import android.content.Context
 import com.kylecorry.bell.domain.Alert
 import com.kylecorry.bell.domain.AlertLevel
 import com.kylecorry.bell.domain.AlertType
+import com.kylecorry.bell.domain.SourceSystem
 import com.kylecorry.bell.infrastructure.alerts.AlertSpecification
 import com.kylecorry.bell.infrastructure.alerts.BaseAlertSource
 import com.kylecorry.bell.infrastructure.utils.HtmlTextFormatter
@@ -19,7 +20,7 @@ class TravelAdvisoryAlertSource(context: Context) : BaseAlertSource(context) {
 
     override fun getSpecification(): AlertSpecification {
         return rss(
-            "State Department Travel Advisories",
+            SourceSystem.StateTravelAdvisories,
             "https://travel.state.gov/_res/rss/TAsTWs.xml",
             AlertType.Travel
         )

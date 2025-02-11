@@ -5,6 +5,7 @@ import com.kylecorry.bell.domain.Alert
 import com.kylecorry.bell.domain.AlertLevel
 import com.kylecorry.bell.domain.AlertType
 import com.kylecorry.bell.domain.Constants
+import com.kylecorry.bell.domain.SourceSystem
 import com.kylecorry.bell.infrastructure.alerts.AlertSpecification
 import com.kylecorry.bell.infrastructure.alerts.BaseAlertSource
 import com.kylecorry.bell.infrastructure.parsers.selectors.Selector
@@ -14,7 +15,7 @@ import com.kylecorry.bell.infrastructure.utils.HtmlTextFormatter
 class HealthAlertNetworkAlertSource(context: Context) : BaseAlertSource(context) {
     override fun getSpecification(): AlertSpecification {
         return html(
-            "CDC HAN",
+            SourceSystem.CDCHealthAlertNetwork,
             "https://tools.cdc.gov/api/v2/resources/media/126194/content.html",
             items = ".bg-quaternary .card-body",
             title = Selector.text("a"),

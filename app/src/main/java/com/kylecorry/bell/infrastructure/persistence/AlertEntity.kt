@@ -6,6 +6,7 @@ import androidx.room.PrimaryKey
 import com.kylecorry.bell.domain.Alert
 import com.kylecorry.bell.domain.AlertLevel
 import com.kylecorry.bell.domain.AlertType
+import com.kylecorry.bell.domain.SourceSystem
 import java.time.Instant
 import java.time.ZoneId
 
@@ -45,7 +46,7 @@ data class AlertEntity(
         return Alert(
             id,
             title,
-            sourceSystem,
+            SourceSystem.entries.find { it.name == sourceSystem } ?: SourceSystem.Other,
             AlertType.entries.find { it.name == type } ?: AlertType.Other,
             AlertLevel.entries.find { it.name == level } ?: AlertLevel.Other,
             link,
@@ -64,7 +65,7 @@ data class AlertEntity(
             return AlertEntity(
                 alert.id,
                 alert.title,
-                alert.sourceSystem,
+                alert.sourceSystem.name,
                 alert.type.name,
                 alert.level.name,
                 alert.link,

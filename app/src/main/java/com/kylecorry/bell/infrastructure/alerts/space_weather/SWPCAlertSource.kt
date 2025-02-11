@@ -5,6 +5,7 @@ import com.kylecorry.bell.domain.Alert
 import com.kylecorry.bell.domain.AlertLevel
 import com.kylecorry.bell.domain.AlertType
 import com.kylecorry.bell.domain.Constants
+import com.kylecorry.bell.domain.SourceSystem
 import com.kylecorry.bell.infrastructure.alerts.AlertSpecification
 import com.kylecorry.bell.infrastructure.alerts.BaseAlertSource
 import com.kylecorry.bell.infrastructure.parsers.DateTimeParser
@@ -20,7 +21,7 @@ class SWPCAlertSource(context: Context) : BaseAlertSource(context) {
 
     override fun getSpecification(): AlertSpecification {
         return json(
-            "Space Weather Prediction Center",
+            SourceSystem.SWPCSpaceWeather,
             "https://services.swpc.noaa.gov/products/alerts.json",
             items = "$",
             title = Selector.value(""),

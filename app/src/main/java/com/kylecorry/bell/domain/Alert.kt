@@ -5,7 +5,7 @@ import java.time.ZonedDateTime
 data class Alert(
     val id: Long,
     val title: String,
-    val sourceSystem: String,
+    val sourceSystem: SourceSystem,
     val type: AlertType,
     val level: AlertLevel,
     val link: String,

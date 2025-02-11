@@ -5,9 +5,11 @@ import com.kylecorry.bell.domain.Alert
 import com.kylecorry.bell.domain.AlertLevel
 import com.kylecorry.bell.domain.AlertType
 import com.kylecorry.bell.domain.Constants
+import com.kylecorry.bell.domain.SourceSystem
 import com.kylecorry.bell.infrastructure.alerts.AlertSpecification
 import com.kylecorry.bell.infrastructure.alerts.BaseAlertSource
 import com.kylecorry.bell.infrastructure.parsers.DateTimeParser
+import com.kylecorry.bell.infrastructure.utils.HtmlTextFormatter
 import org.jsoup.Jsoup
 import java.time.ZoneId
 
@@ -24,7 +26,7 @@ class InciwebWildfireAlertSource(context: Context) : BaseAlertSource(context) {
 
     override fun getSpecification(): AlertSpecification {
         return rss(
-            "Inciweb Wildfire",
+            SourceSystem.InciwebWildfires,
             "https://inciweb.wildfire.gov/incidents/rss.xml",
             AlertType.Fire,
             AlertLevel.Warning

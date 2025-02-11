@@ -12,7 +12,7 @@ import com.kylecorry.bell.infrastructure.alerts.economy.GasolineDieselPricesAler
 import com.kylecorry.bell.infrastructure.alerts.economy.HeatingOilPropanePricesAlertSource
 import com.kylecorry.bell.infrastructure.alerts.fire.InciwebWildfireAlertSource
 import com.kylecorry.bell.infrastructure.alerts.government.CongressionalBillsAlertSource
-import com.kylecorry.bell.infrastructure.alerts.government.WhiteHousePresidentalActionsAlertSource
+import com.kylecorry.bell.infrastructure.alerts.government.WhiteHousePresidentialActionsAlertSource
 import com.kylecorry.bell.infrastructure.alerts.health.HealthAlertNetworkAlertSource
 import com.kylecorry.bell.infrastructure.alerts.health.USOutbreaksAlertSource
 import com.kylecorry.bell.infrastructure.alerts.space_weather.SWPCAlertSource
@@ -129,7 +129,7 @@ class AlertUpdater(private val context: Context) {
     private fun getSources(): List<AlertSource> {
         return listOf(
             NationalWeatherServiceAlertSource(context, preferences.state),
-            WhiteHousePresidentalActionsAlertSource(context),
+            WhiteHousePresidentialActionsAlertSource(context),
             USGSEarthquakeAlertSource(context),
             USGSWaterAlertSource(context),
             SWPCAlertSource(context),
@@ -159,7 +159,6 @@ class AlertUpdater(private val context: Context) {
             }
         }
 
-        // TODO: This isn't correct
         val source = sources.find { it.getSystemName() == alert.sourceSystem }
         val newAlert = source?.updateFromFullText(alert, fullText) ?: alert
         val id = repo.upsert(newAlert)

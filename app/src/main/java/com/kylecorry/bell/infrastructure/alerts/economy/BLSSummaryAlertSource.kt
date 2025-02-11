@@ -4,6 +4,7 @@ import android.content.Context
 import com.kylecorry.bell.domain.Alert
 import com.kylecorry.bell.domain.AlertLevel
 import com.kylecorry.bell.domain.AlertType
+import com.kylecorry.bell.domain.SourceSystem
 import com.kylecorry.bell.infrastructure.alerts.AlertSpecification
 import com.kylecorry.bell.infrastructure.alerts.BaseAlertSource
 import com.kylecorry.bell.infrastructure.parsers.selectors.Selector
@@ -13,7 +14,7 @@ import org.jsoup.Jsoup
 class BLSSummaryAlertSource(context: Context) : BaseAlertSource(context) {
     override fun getSpecification(): AlertSpecification {
         return rss(
-            "BLS",
+            SourceSystem.BLSSummary,
             "https://www.bls.gov/feed/bls_latest.rss",
             AlertType.Economy,
             AlertLevel.Announcement,

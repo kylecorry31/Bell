@@ -4,6 +4,7 @@ import android.content.Context
 import com.kylecorry.bell.domain.Alert
 import com.kylecorry.bell.domain.AlertLevel
 import com.kylecorry.bell.domain.AlertType
+import com.kylecorry.bell.domain.SourceSystem
 import com.kylecorry.bell.infrastructure.alerts.AlertSpecification
 import com.kylecorry.bell.infrastructure.alerts.BaseAlertSource
 import com.kylecorry.bell.infrastructure.parsers.DateTimeParser
@@ -17,7 +18,7 @@ class USGSEarthquakeAlertSource(context: Context) :
 
     override fun getSpecification(): AlertSpecification {
         return atom(
-            "USGS Earthquake",
+            SourceSystem.USGSEarthquake,
             "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/significant_day.atom",
             AlertType.Earthquake,
             AlertLevel.Event,
