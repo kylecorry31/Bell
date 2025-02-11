@@ -10,18 +10,20 @@ import com.kylecorry.bell.infrastructure.alerts.BaseAlertSource
 import com.kylecorry.bell.infrastructure.parsers.selectors.Selector
 import com.kylecorry.bell.infrastructure.utils.HtmlTextFormatter
 
-class CDCAlertSource(context: Context) : BaseAlertSource(context) {
+// https://tools.cdc.gov/api/v2/resources/media/126194/syndicate.json
+class HealthAlertNetworkAlertSource(context: Context) : BaseAlertSource(context) {
     override fun getSpecification(): AlertSpecification {
         return html(
-            "CDC",
-            "https://www.cdc.gov/han/index.html",
-            items = ".bg-quaternary .card",
+            "CDC HAN",
+            "https://tools.cdc.gov/api/v2/resources/media/126194/content.html",
+            items = ".bg-quaternary .card-body",
             title = Selector.text("a"),
             link = Selector.attr("a", "href"),
             uniqueId = Selector.attr("a", "href") { it?.split("/")?.last()?.replace(".html", "") },
             publishedDate = Selector.text("p"),
             summary = Selector.value(""),
-            defaultAlertType = AlertType.Health
+            defaultAlertType = AlertType.Health,
+            defaultAlertLevel = AlertLevel.Advisory,
         )
     }
 
@@ -34,8 +36,8 @@ class CDCAlertSource(context: Context) : BaseAlertSource(context) {
             }
 
             it.copy(
-                title = title,
-                link = "https://www.cdc.gov${it.link}",
+                title = "Health Alert: $title",
+                link = it.link.replace("emergency.", "www."),
                 expirationDate = it.publishedDate.plusDays(Constants.DEFAULT_EXPIRATION_DAYS)
             )
         }

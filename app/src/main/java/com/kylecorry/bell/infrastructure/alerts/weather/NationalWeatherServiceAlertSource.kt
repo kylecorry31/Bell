@@ -18,7 +18,11 @@ class NationalWeatherServiceAlertSource(context: Context, private val area: Stri
             AlertType.Weather,
             AlertLevel.Warning,
             title = Selector.text("cap:event"),
-            link = Selector.value("https://alerts.weather.gov/search?area=$area")
+            link = Selector.value("https://alerts.weather.gov/search?area=$area"),
+            mitigate304 = false,
+            additionalHeaders = mapOf(
+                "If-Modified-Since" to "Thu, 01 Jan 2030 00:00:00 GMT"
+            )
         )
     }
 

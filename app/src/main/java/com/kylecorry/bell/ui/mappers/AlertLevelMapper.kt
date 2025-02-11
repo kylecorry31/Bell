@@ -13,7 +13,7 @@ object AlertLevelMapper {
             AlertLevel.Event -> AppColor.Purple.color
             AlertLevel.Announcement -> AppColor.Gray.color
             AlertLevel.Other -> AppColor.Gray.color
-            AlertLevel.Noise -> AppColor.Gray.color
+            AlertLevel.Ignored -> AppColor.Gray.color
         }
     }
 

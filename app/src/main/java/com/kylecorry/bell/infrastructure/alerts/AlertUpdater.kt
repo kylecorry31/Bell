@@ -4,15 +4,17 @@ import android.content.Context
 import android.util.Log
 import com.kylecorry.andromeda.core.tryOrDefault
 import com.kylecorry.bell.domain.Alert
+import com.kylecorry.bell.domain.AlertLevel
 import com.kylecorry.bell.domain.AlertSource
 import com.kylecorry.bell.infrastructure.alerts.earthquake.USGSEarthquakeAlertSource
-import com.kylecorry.bell.infrastructure.alerts.economy.ConsumerPriceIndexAlertSource
+import com.kylecorry.bell.infrastructure.alerts.economy.BLSSummaryAlertSource
 import com.kylecorry.bell.infrastructure.alerts.economy.GasolineDieselPricesAlertSource
 import com.kylecorry.bell.infrastructure.alerts.economy.HeatingOilPropanePricesAlertSource
 import com.kylecorry.bell.infrastructure.alerts.fire.InciwebWildfireAlertSource
 import com.kylecorry.bell.infrastructure.alerts.government.CongressionalBillsAlertSource
 import com.kylecorry.bell.infrastructure.alerts.government.WhiteHousePresidentalActionsAlertSource
-import com.kylecorry.bell.infrastructure.alerts.health.CDCAlertSource
+import com.kylecorry.bell.infrastructure.alerts.health.HealthAlertNetworkAlertSource
+import com.kylecorry.bell.infrastructure.alerts.health.USOutbreaksAlertSource
 import com.kylecorry.bell.infrastructure.alerts.space_weather.SWPCAlertSource
 import com.kylecorry.bell.infrastructure.alerts.travel.TravelAdvisoryAlertSource
 import com.kylecorry.bell.infrastructure.alerts.volcano.USGSVolcanoAlertSource
@@ -80,8 +82,8 @@ class AlertUpdater(private val context: Context) {
         val updatedAlerts = allAlerts.mapNotNull { alert ->
             val existing =
                 alerts.find { it.uniqueId == alert.uniqueId && it.sourceSystem == alert.sourceSystem && it.publishedDate.toInstant() != alert.publishedDate.toInstant() }
-            if (existing != null) {
-                alert.copy(id = existing.id)
+            if (existing != null && existing.level != AlertLevel.Ignored) {
+                alert.copy(id = existing.id, updateDate = existing.updateDate)
             } else {
                 null
             }
@@ -107,10 +109,15 @@ class AlertUpdater(private val context: Context) {
         // Generate summaries and save new/updated alerts
         (newAlerts + updatedAlerts).forEach { alert ->
             setProgress(completedSummaryCount.toFloat() / (newAlerts.size + updatedAlerts.size))
-            val newAlert = reloadSummary(alert)
-            val isOld = isOld(newAlert)
+
+            val newAlert = if (alert.requiresSummaryUpdate()) {
+                reloadSummary(alert)
+            } else {
+                val newId = repo.upsert(alert)
+                alert.copy(id = newId)
+            }
             // Don't update the list right away for old alerts
-            if (!isOld) {
+            if (!isOld(newAlert)) {
                 onAlertsUpdated(repo.getAll())
             }
             completedSummaryCount++
@@ -126,29 +133,22 @@ class AlertUpdater(private val context: Context) {
             USGSEarthquakeAlertSource(context),
             USGSWaterAlertSource(context),
             SWPCAlertSource(context),
-            CDCAlertSource(context),
+            HealthAlertNetworkAlertSource(context),
             USGSVolcanoAlertSource(context),
             CongressionalBillsAlertSource(context),
             InciwebWildfireAlertSource(context),
             NationalTsunamiAlertSource(context),
             PacificTsunamiAlertSource(context),
             TravelAdvisoryAlertSource(context),
-            ConsumerPriceIndexAlertSource(context),
-            // TODO: This always times out
+            BLSSummaryAlertSource(context),
             GasolineDieselPricesAlertSource(context),
-            HeatingOilPropanePricesAlertSource(context)
+            HeatingOilPropanePricesAlertSource(context),
+            USOutbreaksAlertSource(context)
         )
     }
 
     suspend fun reloadSummary(alert: Alert): Alert = onIO {
         val sources = getSources()
-
-        // Old alerts are not summarized and don't immediately update the list
-        val isOld = isOld(alert)
-        if (isOld && alert.canSkipDownloadIfOld) {
-            val id = repo.upsert(alert)
-            return@onIO alert.copy(id = id)
-        }
 
         // Load the full text if it should use the link for the summary
         val fullText = tryOrDefault(alert.summary) {
@@ -159,11 +159,12 @@ class AlertUpdater(private val context: Context) {
             }
         }
 
+        // TODO: This isn't correct
         val source = sources.find { it.getSystemName() == alert.sourceSystem }
         val newAlert = source?.updateFromFullText(alert, fullText) ?: alert
 
         val summary = tryOrDefault(newAlert.summary) {
-            if (isOld || !newAlert.shouldSummarize) {
+            if (!newAlert.shouldSummarize || !preferences.useGemini) {
                 newAlert.summary
             } else {
                 "### AI Summary\n\n${gemini.summarize(fullText)}\n\n### Original Summary\n\n${newAlert.summary}"

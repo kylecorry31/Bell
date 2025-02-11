@@ -6,6 +6,7 @@ import com.kylecorry.luna.coroutines.onIO
 import com.kylecorry.bell.domain.Alert
 import java.time.Duration
 import java.time.Instant
+import java.time.ZonedDateTime
 
 class AlertRepo private constructor(context: Context) {
 
@@ -16,7 +17,7 @@ class AlertRepo private constructor(context: Context) {
     }
 
     suspend fun upsert(alert: Alert) = onIO {
-        dao.upsert(AlertEntity.fromAlert(alert))
+        dao.upsert(AlertEntity.fromAlert(alert.copy(updateDate = ZonedDateTime.now())))
     }
 
     suspend fun delete(alert: Alert) = onIO {

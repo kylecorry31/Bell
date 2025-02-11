@@ -34,6 +34,8 @@ data class AlertEntity(
     var summary: String,
     @ColumnInfo(name = "expiration_date")
     var expirationDate: Instant? = null,
+    @ColumnInfo(name = "update_date")
+    var updateDate: Instant = Instant.now()
 ) {
     fun toAlert(): Alert {
         return Alert(
@@ -44,6 +46,7 @@ data class AlertEntity(
             AlertLevel.entries.find { it.name == level } ?: AlertLevel.Other,
             link,
             uniqueId,
+            updateDate.atZone(ZoneId.systemDefault()),
             publishedDate.atZone(ZoneId.systemDefault()),
             expirationDate?.atZone(ZoneId.systemDefault()),
             summary,
@@ -63,6 +66,7 @@ data class AlertEntity(
                 alert.publishedDate.toInstant(),
                 alert.summary,
                 alert.expirationDate?.toInstant(),
+                alert.updateDate.toInstant()
             )
         }
     }

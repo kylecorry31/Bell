@@ -8,5 +8,5 @@ enum class AlertLevel {
     Event, // An event has already occurred
     Announcement, // An announcement
     Other, // Any other type of alert
-    Noise // Not something to care about, will be hidden in the UI (added to the DB to prevent re-fetching)
+    Ignored // Not something to care about, will be hidden in the UI (added to the DB to prevent re-fetching)
 }

@@ -13,6 +13,7 @@ import com.kylecorry.bell.infrastructure.parsers.selectors.select
 import com.kylecorry.luna.coroutines.onIO
 import org.jsoup.Jsoup
 import java.time.ZoneId
+import java.time.ZonedDateTime
 
 enum class AlertSourceType {
     XML,
@@ -35,7 +36,8 @@ data class AlertSpecification(
     val defaultAlertLevel: AlertLevel = AlertLevel.Other,
     val additionalHeaders: Map<String, String?> = mapOf(),
     val defaultZoneId: ZoneId = ZoneId.systemDefault(),
-    val limit: Int? = null
+    val limit: Int? = null,
+    val mitigate304: Boolean = true
 )
 
 abstract class BaseAlertSource(
@@ -53,7 +55,8 @@ abstract class BaseAlertSource(
         val specification = getSpecification()
 
         val headers = mutableMapOf(
-            "User-Agent" to "Mozilla/5.0 (Linux; Android 13; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
+            "User-Agent" to "Mozilla/5.0 (Linux; Android 13; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
+//            "If-Modified-Since" to ZonedDateTime.now().toString()
         )
 
         specification.additionalHeaders.forEach { (key, value) ->
@@ -65,7 +68,13 @@ abstract class BaseAlertSource(
         }
 
 
-        val response = http.get(specification.url, headers = headers)
+        // Timestamp is for 304 mitigation
+        val url = if (specification.mitigate304) {
+            "${specification.url}${if (specification.url.contains("?")) "&" else "?"}timestamp=${System.currentTimeMillis()}"
+        } else {
+            specification.url
+        }
+        val response = http.get(url, headers = headers)
 
         val alertItems = select(
             when (specification.type) {
@@ -89,6 +98,7 @@ abstract class BaseAlertSource(
                     specification.defaultZoneId
                 ) ?: return@mapNotNull null,
                 summary = select(it, specification.summary) ?: return@mapNotNull null,
+                updateDate = ZonedDateTime.now(),
                 additionalAttributes = specification.additionalAttributes.mapValues { (_, selector) ->
                     select(it, selector) ?: ""
                 }
@@ -121,7 +131,8 @@ abstract class BaseAlertSource(
         additionalAttributes: Map<String, Selector> = mapOf(),
         additionalHeaders: Map<String, String?> = mapOf(),
         defaultZoneId: ZoneId = ZoneId.systemDefault(),
-        limit: Int? = null
+        limit: Int? = null,
+        mitigate304: Boolean = true
     ): AlertSpecification {
         return AlertSpecification(
             sourceSystem = sourceSystem,
@@ -138,7 +149,8 @@ abstract class BaseAlertSource(
             defaultAlertLevel = defaultAlertLevel,
             defaultZoneId = defaultZoneId,
             additionalHeaders = additionalHeaders,
-            limit = limit
+            limit = limit,
+            mitigate304 = mitigate304
         )
     }
 
@@ -156,7 +168,8 @@ abstract class BaseAlertSource(
         additionalAttributes: Map<String, Selector> = mapOf(),
         additionalHeaders: Map<String, String?> = mapOf(),
         defaultZoneId: ZoneId = ZoneId.systemDefault(),
-        limit: Int? = null
+        limit: Int? = null,
+        mitigate304: Boolean = true
     ): AlertSpecification {
         return AlertSpecification(
             sourceSystem = sourceSystem,
@@ -173,7 +186,8 @@ abstract class BaseAlertSource(
             defaultAlertLevel = defaultAlertLevel,
             defaultZoneId = defaultZoneId,
             additionalHeaders = additionalHeaders,
-            limit = limit
+            limit = limit,
+            mitigate304 = mitigate304
         )
     }
 
@@ -192,6 +206,7 @@ abstract class BaseAlertSource(
         defaultAlertLevel: AlertLevel = AlertLevel.Other,
         defaultZoneId: ZoneId = ZoneId.systemDefault(),
         limit: Int? = null,
+        mitigate304: Boolean = true
     ): AlertSpecification {
         return AlertSpecification(
             sourceSystem = sourceSystem,
@@ -208,7 +223,8 @@ abstract class BaseAlertSource(
             defaultAlertLevel = defaultAlertLevel,
             defaultZoneId = defaultZoneId,
             additionalHeaders = additionalHeaders,
-            limit = limit
+            limit = limit,
+            mitigate304 = mitigate304
         )
     }
 
@@ -227,6 +243,7 @@ abstract class BaseAlertSource(
         defaultAlertLevel: AlertLevel = AlertLevel.Other,
         defaultZoneId: ZoneId = ZoneId.systemDefault(),
         limit: Int? = null,
+        mitigate304: Boolean = true
     ): AlertSpecification {
         return AlertSpecification(
             sourceSystem = sourceSystem,
@@ -243,7 +260,8 @@ abstract class BaseAlertSource(
             defaultAlertType = defaultAlertType,
             defaultAlertLevel = defaultAlertLevel,
             defaultZoneId = defaultZoneId,
-            limit = limit
+            limit = limit,
+            mitigate304 = mitigate304
         )
     }
 }

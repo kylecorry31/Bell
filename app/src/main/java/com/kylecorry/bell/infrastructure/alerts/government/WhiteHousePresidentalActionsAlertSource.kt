@@ -35,7 +35,7 @@ class WhiteHousePresidentalActionsAlertSource(context: Context) : BaseAlertSourc
         val type = html.select(".wp-block-whitehouse-topper__meta--byline").text().trim()
 
         if (type.lowercase() != "executive order") {
-            return alert.copy(summary = "", shouldSummarize = false, level = AlertLevel.Noise)
+            return alert.copy(summary = "", shouldSummarize = false, level = AlertLevel.Ignored)
         }
 
         val content = HtmlTextFormatter.getText(fullText, ".entry-content > p")

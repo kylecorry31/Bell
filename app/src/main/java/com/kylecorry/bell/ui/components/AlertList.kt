@@ -36,7 +36,7 @@ fun AlertList(config: AlertListAttributes.() -> Unit) = Component(config) { attr
 
     val listItems = useMemo(attrs.alerts, attrs.onDelete, formatter, context, openTypes) {
         val secondaryTextColor = Resources.androidTextColorSecondary(context)
-        val alertsToShow = attrs.alerts.filter { it.level != AlertLevel.Noise && !it.isExpired() }
+        val alertsToShow = attrs.alerts.filter { it.level != AlertLevel.Ignored && !it.isExpired() }
         alertsToShow.groupBy { it.type }
             .toList()
             .sortedBy { it.first.importance }
