@@ -1,6 +1,7 @@
 package com.kylecorry.bell.infrastructure.alerts
 
 import android.content.Context
+import android.util.Log
 import com.kylecorry.andromeda.core.tryOrDefault
 import com.kylecorry.bell.domain.Alert
 import com.kylecorry.bell.domain.AlertSource
@@ -46,10 +47,11 @@ class AlertUpdater(private val context: Context) {
         var completedCount = 0
         val totalCount = sources.size
         val lock = Any()
+        val failedSources = mutableSetOf<AlertSource>()
 
         val runner = ParallelCoroutineRunner()
         val allAlerts = runner.map(sources) {
-            tryOrDefault(emptyList()) {
+            try {
                 // TODO: If this fails, let the user know
                 val sourceAlerts = it.getAlerts()
                     .filterNot { it.isExpired() }
@@ -60,6 +62,12 @@ class AlertUpdater(private val context: Context) {
                     setProgress(completedCount.toFloat() / totalCount)
                 }
                 sourceAlerts
+            } catch (e: Exception) {
+                Log.e("AlertUpdater", "Failed to get alerts from ${it.getSystemName()}", e)
+                synchronized(lock) {
+                    failedSources.add(it)
+                }
+                emptyList()
             }
         }.flatten()
 
@@ -79,7 +87,7 @@ class AlertUpdater(private val context: Context) {
 
         // Delete alerts that are no longer present in the feeds
         var anyDeleted = false
-        sources.forEach { source ->
+        sources.filter { !failedSources.contains(it) }.forEach { source ->
             val toDelete =
                 alerts.filter { alert -> alert.sourceSystem == source.getSystemName() && allAlerts.none { alert.uniqueId == it.uniqueId && alert.sourceSystem == it.sourceSystem } }
             anyDeleted = anyDeleted || toDelete.isNotEmpty()
@@ -122,9 +130,10 @@ class AlertUpdater(private val context: Context) {
             InciwebWildfireAlertSource(context),
             NationalTsunamiAlertSource(context),
             PacificTsunamiAlertSource(context),
-            // Updated
             TravelAdvisoryAlertSource(context),
             ConsumerPriceIndexAlertSource(context),
+            // TODO: This always times out
+//            GasolineDieselPricesAlertSource(context)
         )
     }
 

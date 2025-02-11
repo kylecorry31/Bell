@@ -94,7 +94,7 @@ object DateTimeParser {
             DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss z"),
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss z"),
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss Z"),
-            DateTimeFormatter.ofPattern("dd MMM yyyy HH:mm:ss z")
+            DateTimeFormatter.ofPattern("dd MMM yyyy HH:mm:ss z"),
         )
 
         for (pattern in patterns) {

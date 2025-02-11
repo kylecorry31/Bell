@@ -109,6 +109,7 @@ abstract class BaseAlertSource(
         publishedDate: Selector = Selector.text("pubDate"),
         summary: Selector = Selector.text("description"),
         additionalAttributes: Map<String, Selector> = mapOf(),
+        additionalHeaders: Map<String, String> = mapOf(),
         defaultZoneId: ZoneId = ZoneId.systemDefault(),
         limit: Int? = null
     ): AlertSpecification {
@@ -126,6 +127,7 @@ abstract class BaseAlertSource(
             defaultAlertType = defaultAlertType,
             defaultAlertLevel = defaultAlertLevel,
             defaultZoneId = defaultZoneId,
+            additionalHeaders = additionalHeaders,
             limit = limit
         )
     }
@@ -142,6 +144,7 @@ abstract class BaseAlertSource(
         publishedDate: Selector = Selector.text("published"),
         summary: Selector = Selector.text("summary"),
         additionalAttributes: Map<String, Selector> = mapOf(),
+        additionalHeaders: Map<String, String> = mapOf(),
         defaultZoneId: ZoneId = ZoneId.systemDefault(),
         limit: Int? = null
     ): AlertSpecification {
@@ -159,6 +162,7 @@ abstract class BaseAlertSource(
             defaultAlertType = defaultAlertType,
             defaultAlertLevel = defaultAlertLevel,
             defaultZoneId = defaultZoneId,
+            additionalHeaders = additionalHeaders,
             limit = limit
         )
     }
@@ -173,6 +177,7 @@ abstract class BaseAlertSource(
         publishedDate: Selector,
         summary: Selector,
         additionalAttributes: Map<String, Selector> = mapOf(),
+        additionalHeaders: Map<String, String> = mapOf(),
         defaultAlertType: AlertType = AlertType.Other,
         defaultAlertLevel: AlertLevel = AlertLevel.Other,
         defaultZoneId: ZoneId = ZoneId.systemDefault(),
@@ -192,6 +197,7 @@ abstract class BaseAlertSource(
             defaultAlertType = defaultAlertType,
             defaultAlertLevel = defaultAlertLevel,
             defaultZoneId = defaultZoneId,
+            additionalHeaders = additionalHeaders,
             limit = limit
         )
     }
@@ -206,6 +212,7 @@ abstract class BaseAlertSource(
         publishedDate: Selector,
         summary: Selector,
         additionalAttributes: Map<String, Selector> = mapOf(),
+        additionalHeaders: Map<String, String> = mapOf(),
         defaultAlertType: AlertType = AlertType.Other,
         defaultAlertLevel: AlertLevel = AlertLevel.Other,
         defaultZoneId: ZoneId = ZoneId.systemDefault(),
@@ -222,6 +229,7 @@ abstract class BaseAlertSource(
             publishedDate = publishedDate,
             summary = summary,
             additionalAttributes = additionalAttributes,
+            additionalHeaders = additionalHeaders,
             defaultAlertType = defaultAlertType,
             defaultAlertLevel = defaultAlertLevel,
             defaultZoneId = defaultZoneId,
