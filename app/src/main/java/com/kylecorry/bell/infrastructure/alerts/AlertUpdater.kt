@@ -25,7 +25,6 @@ import com.kylecorry.bell.infrastructure.alerts.weather.NationalWeatherServiceAl
 import com.kylecorry.bell.infrastructure.internet.WebPageDownloader
 import com.kylecorry.bell.infrastructure.persistence.AlertRepo
 import com.kylecorry.bell.infrastructure.persistence.UserPreferences
-import com.kylecorry.bell.infrastructure.summarization.Gemini
 import com.kylecorry.bell.infrastructure.utils.ParallelCoroutineRunner
 import com.kylecorry.luna.coroutines.onIO
 import java.time.ZonedDateTime
@@ -34,7 +33,6 @@ class AlertUpdater(private val context: Context) {
 
     private val repo = AlertRepo.getInstance(context)
     private val preferences = UserPreferences(context)
-    private val gemini = Gemini(context, preferences.geminiApiKey)
     private val pageDownloader = WebPageDownloader(context)
 
     suspend fun update(
@@ -162,16 +160,8 @@ class AlertUpdater(private val context: Context) {
         // TODO: This isn't correct
         val source = sources.find { it.getSystemName() == alert.sourceSystem }
         val newAlert = source?.updateFromFullText(alert, fullText) ?: alert
-
-        val summary = tryOrDefault(newAlert.summary) {
-            if (!newAlert.shouldSummarize || !preferences.useGemini) {
-                newAlert.summary
-            } else {
-                "### AI Summary\n\n${gemini.summarize(fullText)}\n\n### Original Summary\n\n${newAlert.summary}"
-            }
-        }
-        val id = repo.upsert(newAlert.copy(summary = summary))
-        newAlert.copy(summary = summary, id = id)
+        val id = repo.upsert(newAlert)
+        newAlert.copy(id = id)
     }
 
     private fun isOld(alert: Alert): Boolean {
