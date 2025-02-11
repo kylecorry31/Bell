@@ -16,6 +16,7 @@ data class Alert(
     val summary: String,
     val fullText: String? = null,
     val llmSummary: String? = null,
+    val wasSummaryDownloaded: Boolean = false,
     // TODO: Intermediates - move to a separate model
     val useLinkForSummary: Boolean = true,
     val isSummaryDownloadRequired: Boolean = false,

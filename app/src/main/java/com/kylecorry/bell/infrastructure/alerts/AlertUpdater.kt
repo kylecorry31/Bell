@@ -160,7 +160,8 @@ class AlertUpdater(private val context: Context) {
         }
 
         val source = sources.find { it.getSystemName() == alert.sourceSystem }
-        val newAlert = source?.updateFromFullText(alert, fullText) ?: alert
+        val newAlert =
+            (source?.updateFromFullText(alert, fullText) ?: alert).copy(wasSummaryDownloaded = true)
         val id = repo.upsert(newAlert)
         newAlert.copy(id = id)
     }

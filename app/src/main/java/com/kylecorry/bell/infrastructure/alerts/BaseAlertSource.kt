@@ -15,7 +15,6 @@ import com.kylecorry.luna.coroutines.onIO
 import org.jsoup.Jsoup
 import java.time.ZoneId
 import java.time.ZonedDateTime
-import javax.xml.transform.Source
 
 enum class AlertSourceType {
     XML,

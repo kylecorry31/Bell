@@ -41,6 +41,8 @@ data class AlertEntity(
     var fullText: String? = null,
     @ColumnInfo(name = "llm_summary")
     var llmSummary: String? = null,
+    @ColumnInfo(name = "was_summary_downloaded")
+    var wasSummaryDownloaded: Boolean = false,
 ) {
     fun toAlert(): Alert {
         return Alert(
@@ -56,7 +58,8 @@ data class AlertEntity(
             expirationDate?.atZone(ZoneId.systemDefault()),
             summary,
             fullText,
-            llmSummary
+            llmSummary,
+            wasSummaryDownloaded
         )
     }
 
@@ -75,7 +78,8 @@ data class AlertEntity(
                 alert.expirationDate?.toInstant(),
                 alert.updateDate.toInstant(),
                 alert.fullText,
-                alert.llmSummary
+                alert.llmSummary,
+                alert.wasSummaryDownloaded
             )
         }
     }
