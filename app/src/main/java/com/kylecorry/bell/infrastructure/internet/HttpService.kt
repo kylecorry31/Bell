@@ -32,7 +32,6 @@ class HttpService(context: Context) {
         onIO {
             suspendCoroutine {
                 // Use Volley to make the request
-//                val queue = Volley.newRequestQueue(context)
                 val request = object : StringRequest(Method.POST, url, { response ->
                     it.resume(response)
                 }, { error ->

@@ -8,12 +8,13 @@ import com.kylecorry.bell.infrastructure.alerts.AlertSpecification
 import com.kylecorry.bell.infrastructure.alerts.BaseAlertSource
 import com.kylecorry.bell.infrastructure.parsers.selectors.Selector
 import com.kylecorry.bell.infrastructure.utils.HtmlTextFormatter
+import com.kylecorry.sol.math.SolMath.roundPlaces
 
 class HeatingOilPropanePricesAlertSource(context: Context) : BaseAlertSource(context) {
     private val oilPriceRegex =
-        Regex("Heating Oil Residential.*<br/>.*(\\d+\\.\\d+).*U\\.S\\.")
+        Regex("Heating\\s+Oil\\s+Residential[^\\d]+(\\d+\\.\\d+)")
     private val propanePriceRegex =
-        Regex("Propane Residential.*<br/>.*(\\d+\\.\\d+).*U\\.S\\.")
+        Regex("Propane\\s+Residential[^\\d]+(\\d+\\.\\d+)")
 
     override fun getSpecification(): AlertSpecification {
         return rss(
@@ -23,13 +24,15 @@ class HeatingOilPropanePricesAlertSource(context: Context) : BaseAlertSource(con
             AlertLevel.Announcement,
             uniqueId = Selector.value("oil_propane"),
             additionalHeaders = mapOf(
-                "Accept" to "application/xhtml+xml,application/xml",
+                "Accept" to "application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+                "User-Agent" to null
             ),
             limit = 1
         )
     }
 
     override fun process(alerts: List<Alert>): List<Alert> {
+        // TODO: Split oil and propane
         return alerts.mapNotNull {
             val oilPrice = oilPriceRegex.find(it.summary)?.groupValues?.get(1)?.toFloatOrNull()
                 ?: return@mapNotNull null
@@ -38,7 +41,7 @@ class HeatingOilPropanePricesAlertSource(context: Context) : BaseAlertSource(con
                     ?: return@mapNotNull null
 
             it.copy(
-                title = "Oil: $oilPrice, Propane: $propanePrice (US Average)",
+                title = "Oil: ${oilPrice.roundPlaces(2)}, Propane: ${propanePrice.roundPlaces(2)} (US Average)",
                 shouldSummarize = false,
                 summary = HtmlTextFormatter.getText(it.summary)
             )

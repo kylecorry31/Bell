@@ -33,7 +33,7 @@ data class AlertSpecification(
     val additionalAttributes: Map<String, Selector> = mapOf(),
     val defaultAlertType: AlertType = AlertType.Other,
     val defaultAlertLevel: AlertLevel = AlertLevel.Other,
-    val additionalHeaders: Map<String, String> = mapOf(),
+    val additionalHeaders: Map<String, String?> = mapOf(),
     val defaultZoneId: ZoneId = ZoneId.systemDefault(),
     val limit: Int? = null
 )
@@ -51,11 +51,21 @@ abstract class BaseAlertSource(
 
     override suspend fun getAlerts(): List<Alert> = onIO {
         val specification = getSpecification()
-        val response = http.get(
-            specification.url, headers = mapOf(
-                "User-Agent" to "Mozilla/5.0 (Linux; Android 13; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
-            ) + specification.additionalHeaders
+
+        val headers = mutableMapOf(
+            "User-Agent" to "Mozilla/5.0 (Linux; Android 13; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
         )
+
+        specification.additionalHeaders.forEach { (key, value) ->
+            if (value != null) {
+                headers[key] = value
+            } else {
+                headers.remove(key)
+            }
+        }
+
+
+        val response = http.get(specification.url, headers = headers)
 
         val alertItems = select(
             when (specification.type) {
@@ -109,7 +119,7 @@ abstract class BaseAlertSource(
         publishedDate: Selector = Selector.text("pubDate"),
         summary: Selector = Selector.text("description"),
         additionalAttributes: Map<String, Selector> = mapOf(),
-        additionalHeaders: Map<String, String> = mapOf(),
+        additionalHeaders: Map<String, String?> = mapOf(),
         defaultZoneId: ZoneId = ZoneId.systemDefault(),
         limit: Int? = null
     ): AlertSpecification {
@@ -144,7 +154,7 @@ abstract class BaseAlertSource(
         publishedDate: Selector = Selector.text("published"),
         summary: Selector = Selector.text("summary"),
         additionalAttributes: Map<String, Selector> = mapOf(),
-        additionalHeaders: Map<String, String> = mapOf(),
+        additionalHeaders: Map<String, String?> = mapOf(),
         defaultZoneId: ZoneId = ZoneId.systemDefault(),
         limit: Int? = null
     ): AlertSpecification {
@@ -177,7 +187,7 @@ abstract class BaseAlertSource(
         publishedDate: Selector,
         summary: Selector,
         additionalAttributes: Map<String, Selector> = mapOf(),
-        additionalHeaders: Map<String, String> = mapOf(),
+        additionalHeaders: Map<String, String?> = mapOf(),
         defaultAlertType: AlertType = AlertType.Other,
         defaultAlertLevel: AlertLevel = AlertLevel.Other,
         defaultZoneId: ZoneId = ZoneId.systemDefault(),
@@ -212,7 +222,7 @@ abstract class BaseAlertSource(
         publishedDate: Selector,
         summary: Selector,
         additionalAttributes: Map<String, Selector> = mapOf(),
-        additionalHeaders: Map<String, String> = mapOf(),
+        additionalHeaders: Map<String, String?> = mapOf(),
         defaultAlertType: AlertType = AlertType.Other,
         defaultAlertLevel: AlertLevel = AlertLevel.Other,
         defaultZoneId: ZoneId = ZoneId.systemDefault(),
