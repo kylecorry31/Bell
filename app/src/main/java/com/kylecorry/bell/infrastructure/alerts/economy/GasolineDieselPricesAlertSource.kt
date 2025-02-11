@@ -27,23 +27,37 @@ class GasolineDieselPricesAlertSource(context: Context) : BaseAlertSource(contex
                 "Accept" to "application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
                 "User-Agent" to null
             ),
-            limit = 1
+            limit = 2
         )
     }
 
     override fun process(alerts: List<Alert>): List<Alert> {
-        // TODO: Split gas and diesel
-        return alerts.mapNotNull {
+        return alerts.flatMap {
             val gasPrice = gasolinePriceRegex.find(it.summary)?.groupValues?.get(1)?.toFloatOrNull()
-                ?: return@mapNotNull null
             val dieselPrice =
                 dieselPriceRegex.find(it.summary)?.groupValues?.get(1)?.toFloatOrNull()
-                    ?: return@mapNotNull null
 
-            it.copy(
-                title = "Gasoline: ${gasPrice.roundPlaces(2)}, Diesel: ${dieselPrice.roundPlaces(2)} (US Average)",
-                shouldSummarize = false,
-                summary = HtmlTextFormatter.getText(it.summary)
+            val summary = HtmlTextFormatter.getText(it.summary)
+
+            listOfNotNull(
+                gasPrice?.let { price ->
+                    it.copy(
+                        title = "Gasoline: ${price.roundPlaces(2)} (US Average)",
+                        shouldSummarize = false,
+                        useLinkForSummary = false,
+                        summary = summary,
+                        uniqueId = "gasoline"
+                    )
+                },
+                dieselPrice?.let { price ->
+                    it.copy(
+                        title = "Diesel: ${price.roundPlaces(2)} (US Average)",
+                        shouldSummarize = false,
+                        useLinkForSummary = false,
+                        summary = summary,
+                        uniqueId = "diesel"
+                    )
+                }
             )
         }
     }

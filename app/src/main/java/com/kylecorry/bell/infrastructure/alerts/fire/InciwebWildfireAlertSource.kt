@@ -4,9 +4,11 @@ import android.content.Context
 import com.kylecorry.bell.domain.Alert
 import com.kylecorry.bell.domain.AlertLevel
 import com.kylecorry.bell.domain.AlertType
+import com.kylecorry.bell.domain.Constants
 import com.kylecorry.bell.infrastructure.alerts.AlertSpecification
 import com.kylecorry.bell.infrastructure.alerts.BaseAlertSource
 import com.kylecorry.bell.infrastructure.parsers.DateTimeParser
+import org.jsoup.Jsoup
 import java.time.ZoneId
 
 class InciwebWildfireAlertSource(context: Context) : BaseAlertSource(context) {
@@ -15,7 +17,10 @@ class InciwebWildfireAlertSource(context: Context) : BaseAlertSource(context) {
     private val stateRegex = Regex("State: (\\w+)")
     private val fireNameRegex = Regex("[A-Z0-9]+\\s(.+)\\sFire")
 
-    private val containedText = "This page will no longer be updated"
+    private val containedText = listOf(
+        "This page will no longer be updated",
+        "100% contained",
+    )
 
     override fun getSpecification(): AlertSpecification {
         return rss(
@@ -32,7 +37,7 @@ class InciwebWildfireAlertSource(context: Context) : BaseAlertSource(context) {
                 return@mapNotNull null
             }
 
-            if (it.summary.contains(containedText, true)) {
+            if (containedText.any { text -> it.summary.contains(text, true) }) {
                 return@mapNotNull null
             }
 
@@ -47,10 +52,29 @@ class InciwebWildfireAlertSource(context: Context) : BaseAlertSource(context) {
 
             it.copy(
                 title = title,
-                useLinkForSummary = false,
                 publishedDate = lastUpdated,
-                expirationDate = null
+                expirationDate = null,
+                link = it.link.replace("http://", "https://"),
+                summaryUpdateIntervalDays = Constants.DEFAULT_EXPIRATION_DAYS
             )
         }
+    }
+
+    override fun updateFromFullText(alert: Alert, fullText: String): Alert {
+
+        // The sibling td item of the th that contains Percent of Perimeter Contained
+        val containedPercent =
+            Jsoup.parse(fullText).select("th:contains(Percent of Perimeter Contained)")
+                .firstOrNull()?.nextElementSibling()?.text()
+
+        if (containedPercent == "100%") {
+            return alert.copy(
+                level = AlertLevel.Ignored,
+                useLinkForSummary = false,
+                shouldSummarize = false
+            )
+        }
+
+        return alert.copy(useLinkForSummary = false)
     }
 }

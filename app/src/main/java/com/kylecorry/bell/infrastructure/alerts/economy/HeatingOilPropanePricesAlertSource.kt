@@ -27,23 +27,37 @@ class HeatingOilPropanePricesAlertSource(context: Context) : BaseAlertSource(con
                 "Accept" to "application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
                 "User-Agent" to null
             ),
-            limit = 1
+            limit = 2
         )
     }
 
     override fun process(alerts: List<Alert>): List<Alert> {
-        // TODO: Split oil and propane
-        return alerts.mapNotNull {
+        return alerts.flatMap {
             val oilPrice = oilPriceRegex.find(it.summary)?.groupValues?.get(1)?.toFloatOrNull()
-                ?: return@mapNotNull null
             val propanePrice =
                 propanePriceRegex.find(it.summary)?.groupValues?.get(1)?.toFloatOrNull()
-                    ?: return@mapNotNull null
 
-            it.copy(
-                title = "Oil: ${oilPrice.roundPlaces(2)}, Propane: ${propanePrice.roundPlaces(2)} (US Average)",
-                shouldSummarize = false,
-                summary = HtmlTextFormatter.getText(it.summary)
+            val summary = HtmlTextFormatter.getText(it.summary)
+
+            listOfNotNull(
+                oilPrice?.let { price ->
+                    it.copy(
+                        title = "Oil: ${price.roundPlaces(2)} (US Average)",
+                        shouldSummarize = false,
+                        useLinkForSummary = false,
+                        summary = summary,
+                        uniqueId = "oil"
+                    )
+                },
+                propanePrice?.let { price ->
+                    it.copy(
+                        title = "Propane: ${price.roundPlaces(2)} (US Average)",
+                        shouldSummarize = false,
+                        useLinkForSummary = false,
+                        summary = summary,
+                        uniqueId = "propane"
+                    )
+                }
             )
         }
     }
