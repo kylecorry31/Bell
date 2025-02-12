@@ -37,6 +37,17 @@ class USGSEarthquakeAlertSource(context: Context) :
             val originalTitle = it.additionalAttributes["originalTitle"] ?: ""
 
             val location = if (originalTitle.contains(" of ")) {
+                originalTitle.substringAfter(" of")
+            } else {
+                ""
+            }
+
+            // TODO: Enable state filtering
+            // if (!StateUtils.isSelectedState(this.state, state, true)) {
+            //     return@mapNotNull null
+            // }
+
+            val locationText = if (originalTitle.contains(" of ")) {
                 "near ${originalTitle.substringAfter(" of ")}"
             } else {
                 ""
@@ -50,7 +61,7 @@ class USGSEarthquakeAlertSource(context: Context) :
             )
 
             it.copy(
-                title = "${it.title} Earthquake $location".trim(),
+                title = "${it.title} Earthquake $locationText".trim(),
                 publishedDate = parsedTime,
                 useLinkForSummary = false,
                 summary = html

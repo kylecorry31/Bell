@@ -11,6 +11,7 @@ import com.kylecorry.bell.infrastructure.internet.HttpService
 import com.kylecorry.bell.infrastructure.parsers.DateTimeParser
 import com.kylecorry.bell.infrastructure.parsers.selectors.Selector
 import com.kylecorry.bell.infrastructure.parsers.selectors.select
+import com.kylecorry.bell.infrastructure.persistence.UserPreferences
 import com.kylecorry.luna.coroutines.onIO
 import org.jsoup.Jsoup
 import java.time.ZoneId
@@ -45,6 +46,8 @@ abstract class BaseAlertSource(
     context: Context
 ) : AlertSource {
     private val http = HttpService(context)
+
+    protected var state = UserPreferences(context).state
 
     abstract fun getSpecification(): AlertSpecification
 

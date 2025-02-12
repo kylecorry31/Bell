@@ -17,5 +17,6 @@ enum class SourceSystem(private val department: String, private val source: Stri
     NOAATsunami("NOAA", "Tsunami"),
     USGSWater("USGS", "Water"),
     IC3InternetCrime("IC3", "Internet Crime"),
+    AirNowAirQuality("AirNow", "Air Quality"),
     Other("Other", "Other");
 }

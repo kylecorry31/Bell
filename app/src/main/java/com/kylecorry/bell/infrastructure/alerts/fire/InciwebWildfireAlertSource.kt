@@ -9,6 +9,7 @@ import com.kylecorry.bell.domain.SourceSystem
 import com.kylecorry.bell.infrastructure.alerts.AlertSpecification
 import com.kylecorry.bell.infrastructure.alerts.BaseAlertSource
 import com.kylecorry.bell.infrastructure.parsers.DateTimeParser
+import com.kylecorry.bell.infrastructure.utils.StateUtils
 import org.jsoup.Jsoup
 import java.time.ZoneId
 
@@ -47,6 +48,11 @@ class InciwebWildfireAlertSource(context: Context) : BaseAlertSource(context) {
                 ?: it.publishedDate
 
             val state = stateRegex.find(it.summary)?.groupValues?.get(1) ?: ""
+
+            if (!StateUtils.isSelectedState(this.state, state, true)) {
+                return@mapNotNull null
+            }
+
             val fireName = fireNameRegex.find(it.title)?.groupValues?.get(1)?.let { "($it)" } ?: ""
 
             val title = "Wildfire in $state $fireName".trim()
