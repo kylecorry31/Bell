@@ -19,6 +19,7 @@ object AlertTypeMapper {
             AlertType.Fire -> R.drawable.fire
             AlertType.Travel -> R.drawable.travel
             AlertType.Economy -> R.drawable.economy
+            AlertType.Crime -> R.drawable.crime
         }
     }
 
@@ -35,6 +36,7 @@ object AlertTypeMapper {
             AlertType.Fire -> context.getString(R.string.fire)
             AlertType.Travel -> context.getString(R.string.travel)
             AlertType.Economy -> context.getString(R.string.economy)
+            AlertType.Crime -> context.getString(R.string.crime)
         }
     }
 

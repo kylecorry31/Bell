@@ -11,5 +11,6 @@ enum class AlertType(val importance: Int) {
     Fire(1),
     Travel(3),
     Economy(3),
+    Crime(3),
     Other(3)
 }
