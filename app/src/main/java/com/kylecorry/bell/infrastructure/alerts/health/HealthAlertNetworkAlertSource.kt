@@ -24,7 +24,7 @@ class HealthAlertNetworkAlertSource(context: Context) : BaseAlertSource(context)
             publishedDate = Selector.text("p"),
             summary = Selector.value(""),
             defaultAlertType = AlertType.Health,
-            defaultAlertLevel = AlertLevel.Advisory,
+            defaultAlertLevel = AlertLevel.Information,
         )
     }
 
@@ -47,9 +47,9 @@ class HealthAlertNetworkAlertSource(context: Context) : BaseAlertSource(context)
 
     override fun updateFromFullText(alert: Alert, fullText: String): Alert {
         val level = when {
-            fullText.contains("HAN_badge_HEALTH_ADVISORY") -> AlertLevel.Advisory
-            fullText.contains("HAN_badge_HEALTH_UPDATE") -> AlertLevel.Update
-            else -> AlertLevel.Warning
+            fullText.contains("HAN_badge_HEALTH_ADVISORY") -> AlertLevel.Low
+            fullText.contains("HAN_badge_HEALTH_UPDATE") -> AlertLevel.Low
+            else -> AlertLevel.High
         }
 
         val summary = HtmlTextFormatter.getText(

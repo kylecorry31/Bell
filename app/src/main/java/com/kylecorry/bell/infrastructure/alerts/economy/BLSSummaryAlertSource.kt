@@ -17,7 +17,7 @@ class BLSSummaryAlertSource(context: Context) : BaseAlertSource(context) {
             SourceSystem.BLSSummary,
             "https://www.bls.gov/feed/bls_latest.rss",
             AlertType.Economy,
-            AlertLevel.Announcement,
+            AlertLevel.Information,
             uniqueId = Selector.value(""),
         )
     }

@@ -22,7 +22,7 @@ class GasolineDieselPricesAlertSource(context: Context) : BaseAlertSource(contex
             SourceSystem.EIAGasolineDieselPrices,
             "https://www.eia.gov/petroleum/gasdiesel/includes/gas_diesel_rss.xml",
             AlertType.Economy,
-            AlertLevel.Announcement,
+            AlertLevel.Information,
             uniqueId = Selector.value("gas_diesel"),
             additionalHeaders = mapOf(
                 "Accept" to "application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",

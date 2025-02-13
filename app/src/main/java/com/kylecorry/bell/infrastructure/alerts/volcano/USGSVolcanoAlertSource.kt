@@ -40,14 +40,11 @@ class USGSVolcanoAlertSource(context: Context) : BaseAlertSource(context) {
             }
 
             val level = when (it.additionalAttributes["alertLevel"]?.lowercase()) {
-                "advisory" -> AlertLevel.Advisory
-                "watch" -> AlertLevel.Watch
-                "warning" -> AlertLevel.Warning
-                else -> AlertLevel.Other
-            }
-            if (level == AlertLevel.Other) {
-                return@mapNotNull null
-            }
+                "advisory" -> AlertLevel.Low
+                "watch" -> AlertLevel.Medium
+                "warning" -> AlertLevel.High
+                else -> null
+            } ?: return@mapNotNull null
             it.copy(
                 title = "Volcano ${level.name} for ${it.title}",
                 level = level,

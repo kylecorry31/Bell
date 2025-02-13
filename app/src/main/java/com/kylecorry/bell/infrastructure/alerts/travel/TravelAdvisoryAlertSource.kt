@@ -37,9 +37,9 @@ class TravelAdvisoryAlertSource(context: Context) : BaseAlertSource(context) {
             }
 
             val alertLevel = when (level) {
-                2 -> AlertLevel.Advisory
-                3 -> AlertLevel.Watch
-                else -> AlertLevel.Warning
+                3 -> AlertLevel.Low
+                4 -> AlertLevel.Medium
+                else -> AlertLevel.Information
             }
 
             val description = levelDescriptions[level] ?: ""

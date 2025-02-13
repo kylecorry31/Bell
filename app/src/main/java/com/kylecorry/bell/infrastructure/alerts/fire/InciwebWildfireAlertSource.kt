@@ -29,7 +29,7 @@ class InciwebWildfireAlertSource(context: Context) : BaseAlertSource(context) {
             SourceSystem.InciwebWildfires,
             "https://inciweb.wildfire.gov/incidents/rss.xml",
             AlertType.Fire,
-            AlertLevel.Warning
+            AlertLevel.High
         )
     }
 

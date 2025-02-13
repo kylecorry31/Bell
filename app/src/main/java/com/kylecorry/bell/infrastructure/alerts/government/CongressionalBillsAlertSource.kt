@@ -16,7 +16,7 @@ class CongressionalBillsAlertSource(context: Context) : BaseAlertSource(context)
             SourceSystem.CongressBills,
             "https://www.congress.gov/rss/presented-to-president.xml",
             AlertType.Government,
-            AlertLevel.Announcement
+            AlertLevel.Information
         )
     }
 

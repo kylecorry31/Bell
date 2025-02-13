@@ -18,6 +18,17 @@ class SWPCAlertSource(context: Context) : BaseAlertSource(context) {
 
     private val titleRegex = Regex("(WARNING|ALERT|SUMMARY|WATCH):\\s(.*)")
     private val stormDateRegex = Regex("([A-Z][a-z]{2}\\s\\d{2}):")
+    private val messageCodeRegex = Regex("Space Weather Message Code: (\\w+)")
+
+    private val codeToAlertLevel = mapOf(
+        "ALTK07" to AlertLevel.Low,
+        "WARK07" to AlertLevel.Low,
+        "WATA50" to AlertLevel.Low,
+        "WATA99" to AlertLevel.High,
+        "ALTK08" to AlertLevel.Medium,
+        "ALTK09" to AlertLevel.High,
+        // Everything else is information
+    )
 
     override fun getSpecification(): AlertSpecification {
         return json(
@@ -42,6 +53,8 @@ class SWPCAlertSource(context: Context) : BaseAlertSource(context) {
             val titleMatch = titleRegex.find(alert.summary)
             val title = titleMatch?.groupValues?.get(2) ?: ""
 
+            val messageCode = messageCodeRegex.find(alert.summary)?.groupValues?.get(1) ?: ""
+
             val dates = stormDateRegex.findAll(alert.summary).toList()
 
             val expirationDate = dates.flatMap {
@@ -61,7 +74,7 @@ class SWPCAlertSource(context: Context) : BaseAlertSource(context) {
                 expirationDate = expirationDate
                     ?: alert.publishedDate.plusDays(Constants.DEFAULT_EXPIRATION_DAYS),
                 uniqueId = "geomagnetic-storm",
-                level = AlertLevel.Watch,
+                level = codeToAlertLevel[messageCode] ?: AlertLevel.Information,
                 useLinkForSummary = false
             )
         }

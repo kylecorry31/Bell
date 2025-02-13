@@ -17,7 +17,7 @@ abstract class TsunamiAlertSource(context: Context, private val url: String) :
             SourceSystem.NOAATsunami,
             url,
             AlertType.Water,
-            AlertLevel.Warning,
+            AlertLevel.High,
             link = Selector.attr("link[title=Bulletin]", "href"),
         )
     }
@@ -61,10 +61,10 @@ abstract class TsunamiAlertSource(context: Context, private val url: String) :
 
         val level = when {
             cancellationMessages.any { body.contains(it) } -> null
-            body.contains(threat) -> AlertLevel.Warning
-            body.contains(warning) -> AlertLevel.Warning
-            body.contains(watch) -> AlertLevel.Watch
-            body.contains(advisory) -> AlertLevel.Advisory
+            body.contains(threat) -> AlertLevel.High
+            body.contains(warning) -> AlertLevel.High
+            body.contains(watch) -> AlertLevel.High
+            body.contains(advisory) -> AlertLevel.Medium
             else -> null
         }
 

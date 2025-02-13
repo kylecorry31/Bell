@@ -27,7 +27,7 @@ class WhiteHousePresidentialActionsAlertSource(context: Context) : BaseAlertSour
             SourceSystem.WhiteHousePresidentialActions,
             "https://www.whitehouse.gov/presidential-actions/feed/",
             AlertType.Government,
-            AlertLevel.Announcement,
+            AlertLevel.Information,
             limit = 10
         )
     }

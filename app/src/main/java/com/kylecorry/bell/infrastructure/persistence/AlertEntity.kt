@@ -50,7 +50,7 @@ data class AlertEntity(
             title,
             SourceSystem.entries.find { it.name == sourceSystem } ?: SourceSystem.Other,
             AlertType.entries.find { it.name == type } ?: AlertType.Other,
-            AlertLevel.entries.find { it.name == level } ?: AlertLevel.Other,
+            AlertLevel.entries.find { it.name == level } ?: AlertLevel.Low,
             link,
             uniqueId,
             updateDate.atZone(ZoneId.systemDefault()),

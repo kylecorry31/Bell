@@ -6,14 +6,10 @@ object AlertLevelMapper {
 
     fun getColor(level: AlertLevel): Int {
         return when (level) {
-            AlertLevel.Watch -> AppColor.Orange.color
-            AlertLevel.Warning -> AppColor.Red.color
-            AlertLevel.Advisory -> AppColor.Yellow.color
-            AlertLevel.Update -> AppColor.Gray.color
-            AlertLevel.Event -> AppColor.Purple.color
-            AlertLevel.Announcement -> AppColor.Gray.color
-            AlertLevel.Other -> AppColor.Gray.color
-            AlertLevel.Ignored -> AppColor.Gray.color
+            AlertLevel.High -> AppColor.Red.color
+            AlertLevel.Medium -> AppColor.Orange.color
+            AlertLevel.Low -> AppColor.Yellow.color
+            else -> AppColor.Gray.color
         }
     }
 

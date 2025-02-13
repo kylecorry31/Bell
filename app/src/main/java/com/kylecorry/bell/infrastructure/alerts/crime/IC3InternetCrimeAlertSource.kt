@@ -14,7 +14,7 @@ class IC3InternetCrimeAlertSource(context: Context) : BaseAlertSource(context) {
             SourceSystem.IC3InternetCrime,
             "https://www.ic3.gov/PSA/RSS",
             AlertType.Crime,
-            AlertLevel.Advisory,
+            AlertLevel.Low,
             summary = Selector.value("")
         )
     }

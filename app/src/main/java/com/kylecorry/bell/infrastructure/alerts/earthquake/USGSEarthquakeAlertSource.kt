@@ -21,7 +21,7 @@ class USGSEarthquakeAlertSource(context: Context) :
             SourceSystem.USGSEarthquake,
             "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/significant_day.atom",
             AlertType.Earthquake,
-            AlertLevel.Event,
+            AlertLevel.Information, // Informational because it is in the past
             title = Selector.attr("category[label=Magnitude]", "term"),
             additionalAttributes = mapOf(
                 "originalTitle" to Selector.text("title")

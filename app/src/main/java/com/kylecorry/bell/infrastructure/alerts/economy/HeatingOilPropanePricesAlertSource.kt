@@ -22,7 +22,7 @@ class HeatingOilPropanePricesAlertSource(context: Context) : BaseAlertSource(con
             SourceSystem.EIAHeatingOilPrices,
             "https://www.eia.gov/petroleum/heatingoilpropane/includes/hopu_rss.xml",
             AlertType.Economy,
-            AlertLevel.Announcement,
+            AlertLevel.Information,
             uniqueId = Selector.value("oil_propane"),
             additionalHeaders = mapOf(
                 "Accept" to "application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",

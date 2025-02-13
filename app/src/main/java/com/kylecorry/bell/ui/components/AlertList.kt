@@ -41,6 +41,9 @@ fun AlertList(config: AlertListAttributes.() -> Unit) = Component(config) { attr
             .toList()
             .sortedBy { it.first.importance }
             .flatMap { (type, alerts) ->
+                val typeLevel =
+                    alerts.maxByOrNull { it.level.importance }?.level ?: AlertLevel.Information
+
                 val items = mutableListOf(
                     ListItem(
                         type.ordinal.toLong(),
@@ -48,7 +51,9 @@ fun AlertList(config: AlertListAttributes.() -> Unit) = Component(config) { attr
                         subtitle = "${alerts.size} alerts",
                         icon = ResourceListIcon(
                             AlertTypeMapper.getIcon(type),
-                            secondaryTextColor
+                            if (typeLevel.importance > AlertLevel.Information.importance) AlertLevelMapper.getColor(
+                                typeLevel
+                            ) else secondaryTextColor
                         ),
                         trailingIcon = ResourceListIcon(
                             if (openTypes.contains(type)) R.drawable.menu_up else R.drawable.menu_down,

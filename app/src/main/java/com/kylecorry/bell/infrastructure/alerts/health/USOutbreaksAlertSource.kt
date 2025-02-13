@@ -17,7 +17,7 @@ class USOutbreaksAlertSource(context: Context) : BaseAlertSource(context) {
             SourceSystem.CDCUSOutbreaks,
             "https://tools.cdc.gov/api/v2/resources/media/285676.rss",
             AlertType.Health,
-            AlertLevel.Warning
+            AlertLevel.High
         )
     }
 
@@ -44,8 +44,8 @@ class USOutbreaksAlertSource(context: Context) : BaseAlertSource(context) {
             .substringBefore("\nSee also").substringBefore("\nLearn more")
 
         val level = when {
-            center.contains("Health Advisory") -> AlertLevel.Advisory
-            else -> AlertLevel.Warning
+            center.contains("Health Advisory") -> AlertLevel.Low
+            else -> AlertLevel.High
         }
 
         return alert.copy(summary = (top + "\n\n" + center).trim(), level = level)

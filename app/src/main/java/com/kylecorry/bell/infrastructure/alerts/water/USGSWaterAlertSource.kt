@@ -28,7 +28,7 @@ class USGSWaterAlertSource(context: Context) : BaseAlertSource(context) {
             SourceSystem.USGSWater,
             "https://water.usgs.gov/alerts/project_alert.xml",
             AlertType.Water,
-            AlertLevel.Warning
+            AlertLevel.High
         )
     }
 }
