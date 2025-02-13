@@ -11,7 +11,7 @@ interface AlertDao {
     @Query("SELECT * FROM alerts")
     suspend fun getAll(): List<AlertEntity>
 
-    @Query("SELECT * FROM alerts WHERE _id = :id LIMIT 1")
+    @Query("SELECT * FROM alerts WHERE id = :id LIMIT 1")
     suspend fun get(id: Long): AlertEntity?
 
     @Upsert
@@ -20,9 +20,9 @@ interface AlertDao {
     @Delete
     suspend fun delete(alert: AlertEntity)
 
-    @Query("DELETE FROM alerts WHERE published_date < :time")
+    @Query("DELETE FROM alerts WHERE sent < :time")
     suspend fun deleteOlderThan(time: Instant)
 
-    @Query("DELETE FROM alerts WHERE expiration_date IS NOT NULL AND expiration_date < :time")
+    @Query("DELETE FROM alerts WHERE expires IS NOT NULL AND expires < :time")
     suspend fun deleteExpired(time: Instant)
 }

@@ -155,7 +155,7 @@ private fun selectJson(node: Any, selector: String): List<Any> {
         selector
     } else {
         "$.$selector"
-    }.trimEnd('.')
+    }.trimEnd('.').replace(" ", ".")
     return JsonPath.read(node as String, fullSelector)
 }
 
@@ -168,7 +168,7 @@ private fun selectJson(node: Any, selector: Selector): String? {
         ".${selector.attribute}"
     } else {
         ""
-    }).trimEnd('.')
+    }).trimEnd('.').replace(" ", ".")
 
     val elements: Any = JsonPath.read(
         node, fullSelector

@@ -1,65 +1,84 @@
 package com.kylecorry.bell.infrastructure.persistence
 
-import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.kylecorry.bell.domain.Alert
-import com.kylecorry.bell.domain.AlertLevel
-import com.kylecorry.bell.domain.AlertType
-import com.kylecorry.bell.domain.SourceSystem
+import com.kylecorry.bell.domain.Area
+import com.kylecorry.bell.domain.Category
+import com.kylecorry.bell.domain.Certainty
+import com.kylecorry.bell.domain.ResponseType
+import com.kylecorry.bell.domain.Severity
+import com.kylecorry.bell.domain.Urgency
 import java.time.Instant
-import java.time.ZoneId
 
 @Entity(
     tableName = "alerts"
 )
 data class AlertEntity(
     @PrimaryKey(autoGenerate = true)
-    @ColumnInfo(name = "_id")
-    var id: Long = 0,
-    @ColumnInfo(name = "title")
-    var title: String,
-    @ColumnInfo(name = "source_system")
-    var sourceSystem: String,
-    @ColumnInfo(name = "type")
-    var type: String,
-    @ColumnInfo(name = "level")
-    var level: String,
-    @ColumnInfo(name = "link")
-    var link: String,
-    @ColumnInfo(name = "unique_id")
-    var uniqueId: String,
-    @ColumnInfo(name = "published_date")
-    var publishedDate: Instant,
-    @ColumnInfo(name = "summary")
-    var summary: String,
-    @ColumnInfo(name = "expiration_date")
-    var expirationDate: Instant? = null,
-    @ColumnInfo(name = "update_date")
-    var updateDate: Instant = Instant.now(),
-    @ColumnInfo(name = "full_text")
-    var fullText: String? = null,
-    @ColumnInfo(name = "llm_summary")
-    var llmSummary: String? = null,
-    @ColumnInfo(name = "was_summary_downloaded")
-    var wasSummaryDownloaded: Boolean = false,
+    val id: Long,
+    // Alert
+    val identifier: String,
+    val sender: String,
+    val sent: Instant,
+    val source: String,
+    // Info
+    val category: Category,
+    val event: String,
+    val urgency: Urgency,
+    val severity: Severity,
+    val certainty: Certainty,
+    val responseType: ResponseType? = null,
+    val effective: Instant? = null,
+    val onset: Instant? = null,
+    val expires: Instant? = null,
+    val headline: String? = null,
+    val description: String? = null,
+    val instruction: String? = null,
+    val link: String? = null,
+    val area: Area? = null,
+    val parameters: Map<String, String>? = null,
+    // Additional info created by Bell
+    val fullText: String? = null,
+    val llmSummary: String? = null,
+    val created: Instant = Instant.now(),
+    val updated: Instant = Instant.now(),
+    /**
+     * Used to hide alerts that are not actively tracked
+     */
+    val isTracked: Boolean = true,
+    val isDownloadRequired: Boolean = false,
+    val redownloadIntervalDays: Long? = null,
 ) {
     fun toAlert(): Alert {
         return Alert(
             id,
-            title,
-            SourceSystem.entries.find { it.name == sourceSystem } ?: SourceSystem.Other,
-            AlertType.entries.find { it.name == type } ?: AlertType.Other,
-            AlertLevel.entries.find { it.name == level } ?: AlertLevel.Low,
+            identifier,
+            sender,
+            sent,
+            source,
+            category,
+            event,
+            urgency,
+            severity,
+            certainty,
+            responseType,
+            effective,
+            onset,
+            expires,
+            headline,
+            description,
+            instruction,
             link,
-            uniqueId,
-            updateDate.atZone(ZoneId.systemDefault()),
-            publishedDate.atZone(ZoneId.systemDefault()),
-            expirationDate?.atZone(ZoneId.systemDefault()),
-            summary,
+            area,
+            parameters,
             fullText,
             llmSummary,
-            wasSummaryDownloaded
+            created,
+            updated,
+            isTracked,
+            isDownloadRequired,
+            redownloadIntervalDays
         )
     }
 
@@ -67,19 +86,32 @@ data class AlertEntity(
         fun fromAlert(alert: Alert): AlertEntity {
             return AlertEntity(
                 alert.id,
-                alert.title,
-                alert.sourceSystem.name,
-                alert.type.name,
-                alert.level.name,
+                alert.identifier,
+                alert.sender,
+                alert.sent,
+                alert.source,
+                alert.category,
+                alert.event,
+                alert.urgency,
+                alert.severity,
+                alert.certainty,
+                alert.responseType,
+                alert.effective,
+                alert.onset,
+                alert.expires,
+                alert.headline,
+                alert.description,
+                alert.instruction,
                 alert.link,
-                alert.uniqueId,
-                alert.publishedDate.toInstant(),
-                alert.summary,
-                alert.expirationDate?.toInstant(),
-                alert.updateDate.toInstant(),
+                alert.area,
+                alert.parameters,
                 alert.fullText,
                 alert.llmSummary,
-                alert.wasSummaryDownloaded
+                alert.created,
+                alert.updated,
+                alert.isTracked,
+                alert.isDownloadRequired,
+                alert.redownloadIntervalDays
             )
         }
     }

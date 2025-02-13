@@ -1,5 +1,6 @@
 package com.kylecorry.bell.infrastructure.parsers
 
+import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -7,6 +8,10 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 object DateTimeParser {
+
+    fun parseInstant(dateString: String, defaultZone: ZoneId = ZoneId.systemDefault()): Instant? {
+        return parse(dateString, defaultZone)?.toInstant()
+    }
 
     fun parse(dateString: String, defaultZone: ZoneId = ZoneId.systemDefault()): ZonedDateTime? {
         val parsed = recursiveParseZonedDateTime(dateString)

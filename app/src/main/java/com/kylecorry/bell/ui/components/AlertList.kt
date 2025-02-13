@@ -14,8 +14,7 @@ import com.kylecorry.andromeda.views.reactivity.AndromedaViews.Component
 import com.kylecorry.andromeda.views.reactivity.ViewAttributes
 import com.kylecorry.bell.R
 import com.kylecorry.bell.domain.Alert
-import com.kylecorry.bell.domain.AlertLevel
-import com.kylecorry.bell.domain.AlertType
+import com.kylecorry.bell.domain.Category
 import com.kylecorry.bell.ui.FormatService
 import com.kylecorry.bell.ui.mappers.AlertLevelMapper
 import com.kylecorry.bell.ui.mappers.AlertTypeMapper
@@ -27,7 +26,7 @@ class AlertListAttributes : ViewAttributes() {
 
 fun AlertList(config: AlertListAttributes.() -> Unit) = Component(config) { attrs ->
 
-    val (openTypes, setOpenTypes) = useState(emptySet<AlertType>())
+    val (openTypes, setOpenTypes) = useState(emptySet<Category>())
 
     val context = useAndroidContext()
     val formatter = useMemo(context) {
@@ -36,14 +35,11 @@ fun AlertList(config: AlertListAttributes.() -> Unit) = Component(config) { attr
 
     val listItems = useMemo(attrs.alerts, attrs.onDelete, formatter, context, openTypes) {
         val secondaryTextColor = Resources.androidTextColorSecondary(context)
-        val alertsToShow = attrs.alerts.filter { it.level != AlertLevel.Ignored && !it.isExpired() }
-        alertsToShow.groupBy { it.type }
+        val alertsToShow = attrs.alerts.filter { it.isValid() }
+        alertsToShow.groupBy { it.category }
             .toList()
-            .sortedBy { it.first.importance }
+            .sortedBy { it.first.ordinal }
             .flatMap { (type, alerts) ->
-                val typeLevel =
-                    alerts.maxByOrNull { it.level.importance }?.level ?: AlertLevel.Information
-
                 val items = mutableListOf(
                     ListItem(
                         type.ordinal.toLong(),
@@ -51,9 +47,7 @@ fun AlertList(config: AlertListAttributes.() -> Unit) = Component(config) { attr
                         subtitle = "${alerts.size} alerts",
                         icon = ResourceListIcon(
                             AlertTypeMapper.getIcon(type),
-                            if (typeLevel.importance > AlertLevel.Information.importance) AlertLevelMapper.getColor(
-                                typeLevel
-                            ) else secondaryTextColor
+                            secondaryTextColor
                         ),
                         trailingIcon = ResourceListIcon(
                             if (openTypes.contains(type)) R.drawable.menu_up else R.drawable.menu_down,
@@ -71,17 +65,17 @@ fun AlertList(config: AlertListAttributes.() -> Unit) = Component(config) { attr
                     items.addAll(alerts.map {
                         ListItem(
                             it.id,
-                            it.title,
-                            formatter.formatDateTime(it.publishedDate),
+                            it.event,
+                            formatter.formatDateTime(it.sent),
                             icon = ResourceListIcon(
                                 R.drawable.alert_circle,
-                                AlertLevelMapper.getColor(it.level)
+                                AlertLevelMapper.getColor(it.severity)
                             ),
                             tags = listOf(
                                 ListItemTag(
-                                    it.level.name,
+                                    it.severity.name,
                                     null,
-                                    AlertLevelMapper.getColor(it.level)
+                                    AlertLevelMapper.getColor(it.severity)
                                 ),
                             ),
                             longClickAction = {
@@ -90,17 +84,28 @@ fun AlertList(config: AlertListAttributes.() -> Unit) = Component(config) { attr
                         ) {
                             val content =
                                 buildSpannedString {
-                                    appendLine(formatter.formatDateTime(it.publishedDate))
+                                    if (it.headline != null) {
+                                        appendLine(it.headline)
+                                        appendLine()
+                                    }
+
+                                    appendLine(formatter.formatDateTime(it.sent))
                                     appendLine()
-                                    appendLine(it.link.trimEnd('/'))
-                                    appendLine()
-                                    appendLine(formatter.formatMarkdown(it.summary))
+                                    if (it.link != null) {
+                                        appendLine(it.link.trimEnd('/'))
+                                        appendLine()
+                                    }
+                                    appendLine(
+                                        formatter.formatMarkdown(
+                                            it.description?.trim() ?: ""
+                                        )
+                                    )
                                 }.toSpannable()
                             LinkifyCompat.addLinks(content, Linkify.WEB_URLS)
 
                             Alerts.dialog(
                                 context,
-                                it.title,
+                                it.event,
                                 content,
                                 allowLinks = true,
                                 cancelText = null

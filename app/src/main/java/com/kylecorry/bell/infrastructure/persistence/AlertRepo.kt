@@ -2,22 +2,21 @@ package com.kylecorry.bell.infrastructure.persistence
 
 import android.annotation.SuppressLint
 import android.content.Context
-import com.kylecorry.luna.coroutines.onIO
 import com.kylecorry.bell.domain.Alert
+import com.kylecorry.luna.coroutines.onIO
 import java.time.Duration
 import java.time.Instant
-import java.time.ZonedDateTime
 
 class AlertRepo private constructor(context: Context) {
 
     private val dao = AppDatabase.getInstance(context).alertDao()
 
     suspend fun getAll(): List<Alert> = onIO {
-        dao.getAll().map { it.toAlert() }.sortedByDescending { it.publishedDate }
+        dao.getAll().map { it.toAlert() }.sortedByDescending { it.sent }
     }
 
     suspend fun upsert(alert: Alert) = onIO {
-        dao.upsert(AlertEntity.fromAlert(alert.copy(updateDate = ZonedDateTime.now())))
+        dao.upsert(AlertEntity.fromAlert(alert.copy(updated = Instant.now())))
     }
 
     suspend fun delete(alert: Alert) = onIO {

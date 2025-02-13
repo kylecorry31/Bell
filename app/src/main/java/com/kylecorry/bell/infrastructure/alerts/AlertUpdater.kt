@@ -4,24 +4,6 @@ import android.content.Context
 import android.util.Log
 import com.kylecorry.andromeda.core.tryOrDefault
 import com.kylecorry.bell.domain.Alert
-import com.kylecorry.bell.domain.AlertLevel
-import com.kylecorry.bell.domain.AlertSource
-import com.kylecorry.bell.infrastructure.alerts.crime.IC3InternetCrimeAlertSource
-import com.kylecorry.bell.infrastructure.alerts.earthquake.USGSEarthquakeAlertSource
-import com.kylecorry.bell.infrastructure.alerts.economy.BLSSummaryAlertSource
-import com.kylecorry.bell.infrastructure.alerts.economy.GasolineDieselPricesAlertSource
-import com.kylecorry.bell.infrastructure.alerts.economy.HeatingOilPropanePricesAlertSource
-import com.kylecorry.bell.infrastructure.alerts.fire.InciwebWildfireAlertSource
-import com.kylecorry.bell.infrastructure.alerts.government.CongressionalBillsAlertSource
-import com.kylecorry.bell.infrastructure.alerts.government.WhiteHousePresidentialActionsAlertSource
-import com.kylecorry.bell.infrastructure.alerts.health.HealthAlertNetworkAlertSource
-import com.kylecorry.bell.infrastructure.alerts.health.USOutbreaksAlertSource
-import com.kylecorry.bell.infrastructure.alerts.space_weather.SWPCAlertSource
-import com.kylecorry.bell.infrastructure.alerts.travel.TravelAdvisoryAlertSource
-import com.kylecorry.bell.infrastructure.alerts.volcano.USGSVolcanoAlertSource
-import com.kylecorry.bell.infrastructure.alerts.water.NationalTsunamiAlertSource
-import com.kylecorry.bell.infrastructure.alerts.water.PacificTsunamiAlertSource
-import com.kylecorry.bell.infrastructure.alerts.water.USGSWaterAlertSource
 import com.kylecorry.bell.infrastructure.alerts.weather.NationalWeatherServiceAlertSource
 import com.kylecorry.bell.infrastructure.internet.WebPageDownloader
 import com.kylecorry.bell.infrastructure.persistence.AlertRepo
@@ -29,7 +11,6 @@ import com.kylecorry.bell.infrastructure.persistence.UserPreferences
 import com.kylecorry.bell.infrastructure.summarization.Gemini
 import com.kylecorry.bell.infrastructure.utils.ParallelCoroutineRunner
 import com.kylecorry.luna.coroutines.onIO
-import java.time.ZonedDateTime
 
 class AlertUpdater(private val context: Context) {
 
@@ -52,55 +33,50 @@ class AlertUpdater(private val context: Context) {
         var completedCount = 0
         val totalCount = sources.size
         val lock = Any()
-        val failedSources = mutableSetOf<AlertSource>()
+        val failedSources = mutableSetOf<String>()
 
         val runner = ParallelCoroutineRunner()
         val allAlerts = runner.map(sources) {
             try {
                 // TODO: If this fails, let the user know
-                val sourceAlerts = it.getAlerts()
-                    .filterNot { it.isExpired() }
-                    .sortedByDescending { it.publishedDate }
-                    .distinctBy { it.uniqueId }
+                val sourceAlerts = it.load()
+                    .filter { it.isValid() }
+                    .sortedByDescending { it.sent }
+                    .distinctBy { it.identifier }
                 synchronized(lock) {
                     completedCount++
                     setProgress(completedCount.toFloat() / totalCount)
                 }
                 sourceAlerts
             } catch (e: Exception) {
-                Log.e("AlertUpdater", "Failed to get alerts from ${it.getSystemName()}", e)
+                Log.e("AlertUpdater", "Failed to get alerts from ${it.getUUID()}", e)
                 synchronized(lock) {
-                    failedSources.add(it)
+                    failedSources.add(it.getUUID())
                 }
                 emptyList()
             }
         }.flatten()
 
-        val newAlerts = allAlerts.filter { alert ->
-            alerts.none { it.uniqueId == alert.uniqueId && it.sourceSystem == alert.sourceSystem }
+        val newAlerts = allAlerts.filterNot { alert ->
+            alerts.any { it.identifier == alert.identifier && it.source == alert.source }
         }
 
         val updatedAlerts = allAlerts.mapNotNull { alert ->
             val existing =
-                alerts.find { it.uniqueId == alert.uniqueId && it.sourceSystem == alert.sourceSystem && it.publishedDate.toInstant() != alert.publishedDate.toInstant() }
-            if (existing != null && existing.level != AlertLevel.Ignored) {
-                alert.copy(id = existing.id, updateDate = existing.updateDate)
+                alerts.find { it.identifier == alert.identifier && it.source == alert.source }
+            if (existing != null && existing.sent != alert.sent && existing.isTracked) {
+                alert.copy(id = existing.id)
             } else {
                 null
             }
         }
 
-        // Delete alerts that are no longer present in the feeds
-        var anyDeleted = false
-        sources.filter { !failedSources.contains(it) }.forEach { source ->
-            val toDelete =
-                alerts.filter { alert -> alert.sourceSystem == source.getSystemName() && allAlerts.none { alert.uniqueId == it.uniqueId && alert.sourceSystem == it.sourceSystem } }
-            anyDeleted = anyDeleted || toDelete.isNotEmpty()
-            toDelete.forEach { repo.delete(it) }
+        // Delete any alerts that are no longer present
+        val toDelete = alerts.filterNot {
+            !failedSources.contains(it.source) && allAlerts.any { alert -> alert.identifier == it.identifier && alert.source == it.source }
         }
-        if (anyDeleted) {
-            onAlertsUpdated(repo.getAll())
-        }
+        toDelete.forEach { repo.delete(it) }
+        onAlertsUpdated(repo.getAll())
 
         setProgress(0f)
         setLoadingMessage("summaries")
@@ -111,14 +87,13 @@ class AlertUpdater(private val context: Context) {
         (newAlerts + updatedAlerts).forEach { alert ->
             setProgress(completedSummaryCount.toFloat() / (newAlerts.size + updatedAlerts.size))
 
-            val newAlert = if (alert.requiresSummaryUpdate()) {
+            if (alert.shouldDownload()) {
                 reloadSummary(alert)
             } else {
-                val newId = repo.upsert(alert)
-                alert.copy(id = newId)
+                repo.upsert(alert)
             }
             // Don't update the list right away for old alerts
-            if (!isOld(newAlert)) {
+            if (completedSummaryCount % 10 == 0) {
                 onAlertsUpdated(repo.getAll())
             }
             completedSummaryCount++
@@ -130,22 +105,22 @@ class AlertUpdater(private val context: Context) {
     private fun getSources(): List<AlertSource> {
         return listOf(
             NationalWeatherServiceAlertSource(context, preferences.state),
-            WhiteHousePresidentialActionsAlertSource(context),
-            USGSEarthquakeAlertSource(context),
-            USGSWaterAlertSource(context),
-            SWPCAlertSource(context),
-            HealthAlertNetworkAlertSource(context),
-            USGSVolcanoAlertSource(context),
-            CongressionalBillsAlertSource(context),
-            InciwebWildfireAlertSource(context),
-            NationalTsunamiAlertSource(context),
-            PacificTsunamiAlertSource(context),
-            TravelAdvisoryAlertSource(context),
-            BLSSummaryAlertSource(context),
-            GasolineDieselPricesAlertSource(context),
-            HeatingOilPropanePricesAlertSource(context),
-            USOutbreaksAlertSource(context),
-            IC3InternetCrimeAlertSource(context)
+//            WhiteHousePresidentialActionsAlertSource(context),
+//            USGSEarthquakeAlertSource(context),
+//            USGSWaterAlertSource(context),
+//            SWPCAlertSource(context),
+//            HealthAlertNetworkAlertSource(context),
+//            USGSVolcanoAlertSource(context),
+//            CongressionalBillsAlertSource(context),
+//            InciwebWildfireAlertSource(context),
+//            NationalTsunamiAlertSource(context),
+//            PacificTsunamiAlertSource(context),
+//            TravelAdvisoryAlertSource(context),
+//            BLSSummaryAlertSource(context),
+//            GasolineDieselPricesAlertSource(context),
+//            HeatingOilPropanePricesAlertSource(context),
+//            USOutbreaksAlertSource(context),
+//            IC3InternetCrimeAlertSource(context)
         )
     }
 
@@ -153,30 +128,26 @@ class AlertUpdater(private val context: Context) {
         val sources = getSources()
 
         // Load the full text if it should use the link for the summary
-        val fullText = tryOrDefault(alert.summary) {
-            if (alert.useLinkForSummary) {
+        val fullText = tryOrDefault(alert.description) {
+            if (alert.link != null) {
                 pageDownloader.download(alert.link)
             } else {
-                alert.summary
+                alert.description
             }
-        }
+        } ?: ""
 
-        val source = sources.find { it.getSystemName() == alert.sourceSystem }
+        val source = sources.find { it.getUUID() == alert.source }
         val newAlert =
-            (source?.updateFromFullText(alert, fullText) ?: alert).copy(wasSummaryDownloaded = true)
+            (source?.updateFromFullText(alert, fullText) ?: alert).copy(isDownloadRequired = false)
         val id = repo.upsert(newAlert)
         newAlert.copy(id = id)
     }
 
     suspend fun generateAISummary(alert: Alert): Alert {
-        val summary = gemini.summarize(alert.fullText ?: alert.summary)
+        val text = alert.fullText ?: alert.description ?: return alert
+        val summary = gemini.summarize(text)
         val newAlert = alert.copy(llmSummary = summary)
         val id = repo.upsert(newAlert)
         return newAlert.copy(id = id)
     }
-
-    private fun isOld(alert: Alert): Boolean {
-        return alert.publishedDate.isBefore(ZonedDateTime.now().minusDays(7))
-    }
-
 }
