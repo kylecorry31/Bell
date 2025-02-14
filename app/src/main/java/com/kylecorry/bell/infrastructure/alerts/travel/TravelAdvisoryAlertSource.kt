@@ -9,17 +9,16 @@ import com.kylecorry.bell.domain.Urgency
 import com.kylecorry.bell.infrastructure.alerts.AlertLoader
 import com.kylecorry.bell.infrastructure.alerts.AlertSource
 import com.kylecorry.bell.infrastructure.alerts.FileType
-import com.kylecorry.bell.infrastructure.parsers.DateTimeParser
 import com.kylecorry.bell.infrastructure.parsers.selectors.Selector.Companion.text
-import com.kylecorry.bell.infrastructure.utils.HtmlTextFormatter
+import java.time.Instant
 
 class TravelAdvisoryAlertSource(context: Context) : AlertSource {
     private val levelRegex = Regex("Level (\\d)")
     private val countryRegex = Regex("(.*)\\s+-\\s+Level")
     private val levelDescriptions = mapOf(
-        2 to "Exercise Increased Caution in",
-        3 to "Reconsider Travel to",
-        4 to "Do Not Travel to"
+        2 to "Exercise Increased Caution in:",
+        3 to "Reconsider Travel to:",
+        4 to "Do Not Travel to:"
     )
     private val levelSeverity = mapOf(
         2 to Severity.Minor,
@@ -36,54 +35,39 @@ class TravelAdvisoryAlertSource(context: Context) : AlertSource {
             "item",
             mapOf(
                 "title" to text("title"),
-                "sent" to text("pubDate"),
                 "description" to text("description"),
                 "link" to text("link"),
                 "identifier" to text("guid")
             )
         )
 
-        return rawAlerts.mapNotNull {
-            val sent = DateTimeParser.parseInstant(it["sent"] ?: "") ?: return@mapNotNull null
-            val title = it["title"] ?: ""
-            val level =
-                levelRegex.find(title)?.groupValues?.get(1)?.toIntOrNull() ?: return@mapNotNull null
-            if (level == 1) {
-                return@mapNotNull null
+        return rawAlerts
+            .groupBy {
+                val title = it["title"] ?: ""
+                val level = levelRegex.find(title)?.groupValues?.get(1)?.toIntOrNull() ?: 0
+                level
             }
-
-            val headline = levelDescriptions[level] ?: ""
-            val country = countryRegex.find(title)?.groupValues?.get(1) ?: ""
-
-            // TODO: Parse the risk indicators:
-            /*
-            - C: Crime
-            - T: Terrorism
-            - U: Civil Unrest
-            - H: Health
-            - N: Natural Disaster
-            - E: Time-limited Event
-            - K: Kidnapping or Hostage Taking
-            - D: Wrongful Detention
-            - O: Other
-             */
-
-            Alert(
-                id = 0,
-                identifier = it["identifier"] ?: "",
-                sender = "US Department of State",
-                sent = sent,
-                source = getUUID(),
-                category = Category.Security,
-                event = "$headline $country",
-                urgency = Urgency.Immediate,
-                severity = levelSeverity[level] ?: Severity.Unknown,
-                certainty = Certainty.Observed,
-                link = it["link"],
-                description = it["description"]?.let { HtmlTextFormatter.getText(it) },
-                headline = title
-            )
-        }
+            .filter { it.key > 1 }
+            .toSortedMap()
+            .mapNotNull { (level, alerts) ->
+                Alert(
+                    id = 0,
+                    identifier = "travel-advisory-$level",
+                    sender = "US Department of State",
+                    sent = Instant.now(), // Ensures this will remain up to date
+                    source = getUUID(),
+                    category = Category.Security,
+                    event = "Level $level Travel Advisories",
+                    urgency = Urgency.Immediate,
+                    severity = levelSeverity[level] ?: Severity.Unknown,
+                    certainty = Certainty.Observed,
+                    description = levelDescriptions[level] + "\n\n" + alerts.map {
+                        val country =
+                            countryRegex.find(it["title"] ?: "")?.groupValues?.get(1) ?: ""
+                        "- [$country](${it["link"]})"
+                    }.sorted().joinToString("\n"),
+                )
+            }
     }
 
     override fun getUUID(): String {
