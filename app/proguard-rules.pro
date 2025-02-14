@@ -22,3 +22,7 @@
 -keepnames class * extends android.os.Parcelable
 -keepnames class * extends java.io.Serializable
 -keep class * extends androidx.fragment.app.Fragment{}
+
+-keepnames class com.kylecorry.bell.domain.Area{}
+-keepnames class com.kylecorry.sol.units.Coordinate{}
+-keepnames class com.kylecorry.sol.science.geology.Geofence{}

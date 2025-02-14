@@ -23,7 +23,7 @@ data class Alert(
     val effective: Instant? = null,
     val onset: Instant? = null,
     val expires: Instant? = null,
-    val headline: String? = null,
+    val headline: String? = event,
     val description: String? = null,
     val instruction: String? = null,
     val link: String? = null,
@@ -193,26 +193,83 @@ enum class ResponseType(override val codes: List<String>) : CAPEnum {
 }
 
 enum class Urgency(override val codes: List<String>) : CAPEnum {
+    /**
+     * Responsive action should be taken immediately
+     */
     Immediate(listOf("Immediate")),
+
+    /**
+     * Responsive action should be taken soon (within next hour)
+     */
     Expected(listOf("Expected")),
+
+    /**
+     * Responsive action should be taken in the near future
+     */
     Future(listOf("Future")),
+
+    /**
+     * Responsive action is no longer required
+     */
     Past(listOf("Past")),
+
+    /**
+     * Urgency unknown
+     */
     Unknown(listOf("Unknown")),
 }
 
 enum class Severity(override val codes: List<String>) : CAPEnum {
+    /**
+     * Extraordinary threat to life or property
+     */
     Extreme(listOf("Extreme")),
+
+    /**
+     * Significant threat to life or property
+     */
     Severe(listOf("Severe")),
+
+    /**
+     * Possible threat to life or property
+     */
     Moderate(listOf("Moderate")),
+
+    /**
+     * Minimal to no known threat to life or property
+     */
     Minor(listOf("Minor")),
+
+    /**
+     * Severity unknown
+     */
     Unknown(listOf("Unknown")),
 }
 
 enum class Certainty(override val codes: List<String>) : CAPEnum {
+    /**
+     * Determined to have occurred or to be ongoing
+     */
     Observed(listOf("Observed")),
+
+    /**
+     * Likely (p > ~50%)
+     */
     Likely(listOf("Likely", "Very Likely")),
+
+    /**
+     * Possible but not likely (p <= ~50%)
+     */
     Possible(listOf("Possible")),
+
+    /**
+     * Not expected to occur (p ~ 0)
+     */
     Unlikely(listOf("Unlikely")),
+
+    /**
+     * Certainty unknown
+     */
     Unknown(listOf("Unknown")),
 }
 

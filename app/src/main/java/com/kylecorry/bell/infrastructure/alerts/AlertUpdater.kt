@@ -4,7 +4,13 @@ import android.content.Context
 import android.util.Log
 import com.kylecorry.andromeda.core.tryOrDefault
 import com.kylecorry.bell.domain.Alert
+import com.kylecorry.bell.infrastructure.alerts.crime.IC3InternetCrimeAlertSource
+import com.kylecorry.bell.infrastructure.alerts.earthquake.USGSEarthquakeAlertSource
+import com.kylecorry.bell.infrastructure.alerts.fire.InciwebWildfireAlertSource
+import com.kylecorry.bell.infrastructure.alerts.health.HealthAlertNetworkAlertSource
+import com.kylecorry.bell.infrastructure.alerts.health.USOutbreaksAlertSource
 import com.kylecorry.bell.infrastructure.alerts.space_weather.SWPCAlertSource
+import com.kylecorry.bell.infrastructure.alerts.travel.TravelAdvisoryAlertSource
 import com.kylecorry.bell.infrastructure.alerts.volcano.USGSVolcanoAlertSource
 import com.kylecorry.bell.infrastructure.alerts.water.USGSWaterAlertSource
 import com.kylecorry.bell.infrastructure.alerts.weather.NationalWeatherServiceAlertSource
@@ -118,21 +124,21 @@ class AlertUpdater(private val context: Context) {
         return listOf(
             NationalWeatherServiceAlertSource(context, preferences.state),
 //            WhiteHousePresidentialActionsAlertSource(context),
-//            USGSEarthquakeAlertSource(context),
+            USGSEarthquakeAlertSource(context),
             USGSWaterAlertSource(context),
             SWPCAlertSource(context),
-//            HealthAlertNetworkAlertSource(context),
+            HealthAlertNetworkAlertSource(context),
             USGSVolcanoAlertSource(context),
 //            CongressionalBillsAlertSource(context),
-//            InciwebWildfireAlertSource(context),
+            InciwebWildfireAlertSource(context),
 //            NationalTsunamiAlertSource(context),
 //            PacificTsunamiAlertSource(context),
-//            TravelAdvisoryAlertSource(context),
+            TravelAdvisoryAlertSource(context),
 //            BLSSummaryAlertSource(context),
 //            GasolineDieselPricesAlertSource(context),
 //            HeatingOilPropanePricesAlertSource(context),
-//            USOutbreaksAlertSource(context),
-//            IC3InternetCrimeAlertSource(context)
+            USOutbreaksAlertSource(context),
+            IC3InternetCrimeAlertSource(context)
         )
     }
 

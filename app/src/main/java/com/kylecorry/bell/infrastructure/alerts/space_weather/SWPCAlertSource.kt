@@ -87,7 +87,7 @@ class SWPCAlertSource(context: Context) : AlertSource {
                 expires = expirationDate
                     ?: sent.plus(Duration.ofDays(Constants.DEFAULT_EXPIRATION_DAYS)),
             )
-        }
+        }.sortedByDescending { it.sent }.take(1)
     }
 
     override fun getUUID(): String {
