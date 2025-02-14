@@ -5,6 +5,7 @@ import android.util.Log
 import com.kylecorry.andromeda.core.tryOrDefault
 import com.kylecorry.bell.domain.Alert
 import com.kylecorry.bell.infrastructure.alerts.crime.IC3InternetCrimeAlertSource
+import com.kylecorry.bell.infrastructure.alerts.crime.NationalTerrorismAdvisoryAlertSource
 import com.kylecorry.bell.infrastructure.alerts.earthquake.USGSEarthquakeAlertSource
 import com.kylecorry.bell.infrastructure.alerts.economy.BLSSummaryAlertSource
 import com.kylecorry.bell.infrastructure.alerts.economy.FuelPricesAlertSource
@@ -139,7 +140,8 @@ class AlertUpdater(private val context: Context) {
             BLSSummaryAlertSource(context),
             FuelPricesAlertSource(context),
             USOutbreaksAlertSource(context),
-            IC3InternetCrimeAlertSource(context)
+            IC3InternetCrimeAlertSource(context),
+            NationalTerrorismAdvisoryAlertSource(context)
         )
     }
 
