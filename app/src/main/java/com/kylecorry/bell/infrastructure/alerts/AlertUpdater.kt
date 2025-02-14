@@ -4,12 +4,14 @@ import android.content.Context
 import android.util.Log
 import com.kylecorry.andromeda.core.tryOrDefault
 import com.kylecorry.bell.domain.Alert
+import com.kylecorry.bell.infrastructure.alerts.water.USGSWaterAlertSource
 import com.kylecorry.bell.infrastructure.alerts.weather.NationalWeatherServiceAlertSource
 import com.kylecorry.bell.infrastructure.internet.WebPageDownloader
 import com.kylecorry.bell.infrastructure.persistence.AlertRepo
 import com.kylecorry.bell.infrastructure.persistence.UserPreferences
 import com.kylecorry.bell.infrastructure.summarization.Gemini
 import com.kylecorry.bell.infrastructure.utils.ParallelCoroutineRunner
+import com.kylecorry.bell.infrastructure.utils.StateUtils
 import com.kylecorry.luna.coroutines.onIO
 
 class AlertUpdater(private val context: Context) {
@@ -26,6 +28,8 @@ class AlertUpdater(private val context: Context) {
     ) {
         repo.cleanup()
 
+        val state = preferences.state
+
         val alerts = repo.getAll()
 
         val sources = getSources()
@@ -40,7 +44,15 @@ class AlertUpdater(private val context: Context) {
             try {
                 // TODO: If this fails, let the user know
                 val sourceAlerts = it.load()
-                    .filter { it.isValid() }
+                    .filter {
+                        it.isValid() && (it.area == null || it.area.states.any {
+                            StateUtils.isSelectedState(
+                                state,
+                                it,
+                                true
+                            )
+                        })
+                    }
                     .sortedByDescending { it.sent }
                     .distinctBy { it.identifier }
                 synchronized(lock) {
@@ -107,7 +119,7 @@ class AlertUpdater(private val context: Context) {
             NationalWeatherServiceAlertSource(context, preferences.state),
 //            WhiteHousePresidentialActionsAlertSource(context),
 //            USGSEarthquakeAlertSource(context),
-//            USGSWaterAlertSource(context),
+            USGSWaterAlertSource(context),
 //            SWPCAlertSource(context),
 //            HealthAlertNetworkAlertSource(context),
 //            USGSVolcanoAlertSource(context),

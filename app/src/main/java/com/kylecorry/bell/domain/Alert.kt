@@ -59,8 +59,8 @@ data class Alert(
 }
 
 data class Area(
-    val areaDescription: String,
     val states: List<String>,
+    val areaDescription: String = states.joinToString(", "),
     val polygons: List<List<Coordinate>>? = null,
     val circles: List<Geofence>? = null
 )

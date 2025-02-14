@@ -19,12 +19,13 @@ data class Selector(
     val attribute: String? = null,
     val index: Int? = null,
     val valueOverride: String? = null,
+    val delimiter: String = ", ",
     val mapFn: (String?) -> String? = { it }
 ) {
     companion object {
         fun text(
             selector: String,
-            index: Int? = null,
+            index: Int = 0,
             mapFn: (String?) -> String? = { it }
         ): Selector {
             return Selector(selector, index = index, mapFn = mapFn)
@@ -33,7 +34,7 @@ data class Selector(
         fun attr(
             selector: String,
             attribute: String,
-            index: Int? = null,
+            index: Int = 0,
             mapFn: (String?) -> String? = { it }
         ): Selector {
             return Selector(selector, attribute = attribute, index = index, mapFn = mapFn)
@@ -44,6 +45,23 @@ data class Selector(
             mapFn: (String?) -> String? = { it }
         ): Selector {
             return Selector("", valueOverride = value, mapFn = mapFn)
+        }
+
+        fun allText(
+            selector: String,
+            delimiter: String = ", ",
+            mapFn: (String?) -> String? = { it }
+        ): Selector {
+            return Selector(selector, delimiter = delimiter, mapFn = mapFn)
+        }
+
+        fun allAttr(
+            selector: String,
+            attribute: String,
+            delimiter: String = ", ",
+            mapFn: (String?) -> String? = { it }
+        ): Selector {
+            return Selector(selector, attribute = attribute, delimiter = delimiter, mapFn = mapFn)
         }
     }
 }
@@ -77,7 +95,20 @@ private fun selectHtml(element: Element, selector: String): List<Element> {
 
 private fun selectHtml(element: Element, selector: Selector): String? {
     val elements = selectHtml(element, selector.selector)
-    val selectedElement = elements.getOrNull(selector.index ?: 0) ?: return null
+
+    val selectedElement = if (elements.isEmpty()) {
+        return null
+    } else if (selector.index == null) {
+        return selector.mapFn(elements.mapNotNull {
+            if (selector.attribute != null) {
+                it.attr(selector.attribute)
+            } else {
+                it.wholeText()
+            }
+        }.joinToString(selector.delimiter))
+    } else {
+        elements.getOrNull(selector.index)
+    } ?: return null
 
     return selector.mapFn(
         if (selector.attribute != null) {
@@ -116,7 +147,19 @@ private fun selectXml(node: XMLNode, selector: String): List<XMLNode> {
 
 private fun selectXml(node: XMLNode, selector: Selector): String? {
     val elements = selectXml(node, selector.selector)
-    val selectedElement = elements.getOrNull(selector.index ?: 0) ?: return null
+    val selectedElement = if (elements.isEmpty()) {
+        return null
+    } else if (selector.index == null) {
+        return selector.mapFn(elements.mapNotNull {
+            if (selector.attribute != null) {
+                it.attributes[selector.attribute]
+            } else {
+                it.text
+            }
+        }.joinToString(selector.delimiter))
+    } else {
+        elements.getOrNull(selector.index)
+    } ?: return null
 
     return selector.mapFn(
         if (selector.attribute != null) {
@@ -173,7 +216,11 @@ private fun selectJson(node: Any, selector: Selector): String? {
     val elements: Any = JsonPath.read(
         node, fullSelector
     )
-    val selectedElement = if (elements is List<*>) {
+    val selectedElement = if (elements is List<*> && elements.isEmpty()) {
+        null
+    } else if (elements is List<*> && selector.index == null) {
+        elements.joinToString(selector.delimiter)
+    } else if (elements is List<*>) {
         elements.getOrNull(selector.index ?: 0)
     } else {
         elements

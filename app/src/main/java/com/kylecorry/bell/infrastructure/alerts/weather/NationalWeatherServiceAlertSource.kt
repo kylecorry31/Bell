@@ -73,7 +73,7 @@ class NationalWeatherServiceAlertSource(context: Context, private val state: Str
                 headline = it["headline"],
                 description = it["description"],
                 link = it["link"],
-                area = it["areaDescription"]?.let { Area(it, listOf(state)) },
+                area = Area(listOf(state), it["areaDescription"] ?: state),
             )
         }
     }
