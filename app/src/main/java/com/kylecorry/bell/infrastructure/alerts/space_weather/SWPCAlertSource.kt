@@ -31,6 +31,22 @@ class SWPCAlertSource(context: Context) : AlertSource {
         // Everything else is minor
     )
 
+    private val codeToStormLevel = mapOf(
+        "ALTK05" to "1",
+        "WARK05" to "1",
+        "WATA20" to "1",
+        "ALTK06" to "2",
+        "WARK06" to "2",
+        "WATA30" to "2",
+        "ALTK07" to "3",
+        "WARK07" to "3",
+        "WATA50" to "3",
+        "ALTK08" to "4",
+        "WARK08" to "4",
+        "ALTK09" to "5",
+        "WARK09" to "5",
+        "WATA99" to "4+"
+    )
 
     override suspend fun load(): List<Alert> {
         val rawAlerts = loader.load(
@@ -49,7 +65,7 @@ class SWPCAlertSource(context: Context) : AlertSource {
                 ?: return@mapNotNull null
 
             // TODO: Handle other types of alerts
-            if (!description.contains("WATCH: Geomagnetic Storm Category")!!) {
+            if (!description.contains("WATCH: Geomagnetic Storm Category")) {
                 return@mapNotNull null
             }
 
@@ -59,6 +75,8 @@ class SWPCAlertSource(context: Context) : AlertSource {
                 ?: return@mapNotNull null
 
             val dates = stormDateRegex.findAll(description).toList()
+
+            val stormLevel = codeToStormLevel[messageCode] ?: return@mapNotNull null
 
             val expirationDate = dates.flatMap {
                 listOf(
@@ -79,7 +97,8 @@ class SWPCAlertSource(context: Context) : AlertSource {
                 sent = sent,
                 source = getUUID(),
                 category = Category.Infrastructure,
-                event = title,
+                event = "Geomagnetic Storm Watch (G$stormLevel)",
+                headline = title,
                 urgency = Urgency.Unknown,
                 severity = codeToSeverity[messageCode] ?: Severity.Minor,
                 certainty = Certainty.Unknown,
