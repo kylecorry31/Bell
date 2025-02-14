@@ -123,13 +123,11 @@ class AlertUpdater(private val context: Context) {
     private fun getSources(): List<AlertSource> {
         return listOf(
             NationalWeatherServiceAlertSource(context, preferences.state),
-//            WhiteHousePresidentialActionsAlertSource(context),
             USGSEarthquakeAlertSource(context),
             USGSWaterAlertSource(context),
             SWPCAlertSource(context),
             HealthAlertNetworkAlertSource(context),
             USGSVolcanoAlertSource(context),
-//            CongressionalBillsAlertSource(context),
             InciwebWildfireAlertSource(context),
 //            NationalTsunamiAlertSource(context),
 //            PacificTsunamiAlertSource(context),
