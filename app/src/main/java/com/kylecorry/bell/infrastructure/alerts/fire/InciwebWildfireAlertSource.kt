@@ -88,7 +88,8 @@ class InciwebWildfireAlertSource(context: Context) : AlertSource {
                 link = link,
                 area = state?.let { Area(listOf(it)) },
                 isDownloadRequired = true,
-                redownloadIntervalDays = Constants.DEFAULT_EXPIRATION_DAYS
+                redownloadIntervalDays = Constants.DEFAULT_EXPIRATION_DAYS,
+                impactsBorderingStates = true
             )
         }
     }

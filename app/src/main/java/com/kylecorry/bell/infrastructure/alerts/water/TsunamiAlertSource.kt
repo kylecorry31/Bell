@@ -27,15 +27,35 @@ abstract class TsunamiAlertSource(context: Context, private val url: String) : A
 
     private val loader = AlertLoader(context)
 
-    private val locationMap = mapOf(
+    private val stationToStateMap = mapOf(
         // Only using the non segmented alerts: https://tsunami.gov/?page=product_list
-        "WEAK51" to "Alaska, British Colombia, U.S. West Coast",
-        "WEHW40" to "Hawaii",
-        "WEZS40" to "American Samoa",
-        "WEGM40" to "Guam, CNMI",
-        "WEXX30" to "U.S. Atlantic, Gulf of Mexico, Canada",
-        "WECA40" to "Puerto Rico, Virgin Islands",
+        "WEAK51" to listOf("AK", "WA", "OR", "CA"),
+        "WEHW40" to listOf("HI"),
+        "WEZS40" to listOf("AS"),
+        "WEGM40" to listOf("GU", "MP"),
+        "WEXX30" to listOf(
+            "TX",
+            "LA",
+            "MS",
+            "AL",
+            "FL",
+            "GA",
+            "SC",
+            "NC",
+            "VA",
+            "MD",
+            "DE",
+            "NJ",
+            "NY",
+            "CT",
+            "RI",
+            "MA",
+            "NH",
+            "ME",
+        ),
+        "WECA40" to listOf("PR", "VI"),
     )
+
 
     override suspend fun load(): List<Alert> {
         val rawAlerts = loader.load(
@@ -52,6 +72,9 @@ abstract class TsunamiAlertSource(context: Context, private val url: String) : A
         )
 
         return rawAlerts.mapNotNull {
+            val states = stationToStateMap.entries.firstOrNull { entry ->
+                it["link"]?.contains(entry.key) == true
+            }?.value ?: return@mapNotNull null
             Alert(
                 id = 0,
                 identifier = it["identifier"] ?: "",
@@ -65,10 +88,9 @@ abstract class TsunamiAlertSource(context: Context, private val url: String) : A
                 certainty = Certainty.Unknown,
                 link = it["link"]?.replace("http://", "https://"),
                 description = HtmlTextFormatter.getText(it["summary"] ?: ""),
+                area = Area(states),
                 isDownloadRequired = true
             )
-        }.filter { alert ->
-            locationMap.any { alert.link?.contains(it.key) == true }
         }
     }
 
@@ -125,9 +147,10 @@ abstract class TsunamiAlertSource(context: Context, private val url: String) : A
             instruction = instruction?.trim(),
             link = link,
             responseType = ResponseType.entries.getByCode(responseType ?: "") ?: alert.responseType,
-            area = areaDesc?.let {
-                Area(listOf(), areaDesc, circles = listOfNotNull(geofence))
-            }
+            area = alert.area!!.copy(
+                areaDescription = areaDesc ?: alert.area.areaDescription,
+                circles = listOfNotNull(geofence)
+            ),
         )
     }
 }

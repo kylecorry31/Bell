@@ -49,6 +49,7 @@ data class AlertEntity(
     val isTracked: Boolean = true,
     val isDownloadRequired: Boolean = false,
     val redownloadIntervalDays: Long? = null,
+    val impactsBorderingStates: Boolean = false,
 ) {
     fun toAlert(): Alert {
         return Alert(

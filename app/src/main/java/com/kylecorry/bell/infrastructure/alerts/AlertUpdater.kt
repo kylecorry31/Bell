@@ -60,7 +60,7 @@ class AlertUpdater(private val context: Context) {
                         it.isValid() && StateUtils.shouldShowAlert(
                             state,
                             it.area,
-                            true
+                            it.impactsBorderingStates
                         )
                     }
                     .sortedByDescending { it.sent }

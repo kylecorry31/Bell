@@ -40,6 +40,7 @@ data class Alert(
     val isTracked: Boolean = true,
     val isDownloadRequired: Boolean = false,
     val redownloadIntervalDays: Long? = null,
+    val impactsBorderingStates: Boolean = false,
 ) {
     fun isActive(time: Instant = Instant.now()): Boolean {
         return isValid(time) && (effective ?: Instant.MIN).isBefore(time)
