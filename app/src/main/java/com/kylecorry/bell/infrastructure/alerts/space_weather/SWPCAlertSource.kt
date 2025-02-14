@@ -1,82 +1,98 @@
-//package com.kylecorry.bell.infrastructure.alerts.space_weather
-//
-//import android.content.Context
-//import com.kylecorry.bell.domain.Alert
-//import com.kylecorry.bell.domain.AlertLevel
-//import com.kylecorry.bell.domain.AlertType
-//import com.kylecorry.bell.domain.Constants
-//import com.kylecorry.bell.domain.SourceSystem
-//import com.kylecorry.bell.infrastructure.alerts.AlertSpecification
-//import com.kylecorry.bell.infrastructure.alerts.BaseAlertSource
-//import com.kylecorry.bell.infrastructure.parsers.DateTimeParser
-//import com.kylecorry.bell.infrastructure.parsers.selectors.Selector
-//import com.kylecorry.sol.time.Time.atEndOfDay
-//import java.time.Duration
-//import java.time.ZoneId
-//
-//class SWPCAlertSource(context: Context) : BaseAlertSource(context) {
-//
-//    private val titleRegex = Regex("(WARNING|ALERT|SUMMARY|WATCH):\\s(.*)")
-//    private val stormDateRegex = Regex("([A-Z][a-z]{2}\\s\\d{2}):")
-//    private val messageCodeRegex = Regex("Space Weather Message Code: (\\w+)")
-//
-//    private val codeToAlertLevel = mapOf(
-//        "ALTK07" to AlertLevel.Low,
-//        "WARK07" to AlertLevel.Low,
-//        "WATA50" to AlertLevel.Low,
-//        "WATA99" to AlertLevel.High,
-//        "ALTK08" to AlertLevel.Medium,
-//        "ALTK09" to AlertLevel.High,
-//        // Everything else is information
-//    )
-//
-//    override fun getSpecification(): AlertSpecification {
-//        return json(
-//            SourceSystem.SWPCSpaceWeather,
-//            "https://services.swpc.noaa.gov/products/alerts.json",
-//            items = "$",
-//            title = Selector.value(""),
-//            link = Selector.value("https://www.swpc.noaa.gov/"),
-//            uniqueId = Selector.value(""),
-//            publishedDate = Selector.text("issue_datetime") { it?.replace(" ", "T") + "Z" },
-//            summary = Selector.text("message"),
-//            defaultAlertType = AlertType.SpaceWeather,
-//        )
-//    }
-//
-//    override fun process(alerts: List<Alert>): List<Alert> {
-//        return alerts.mapNotNull { alert ->
-//            if (!alert.summary.contains("WATCH: Geomagnetic Storm Category")) {
-//                return@mapNotNull null
-//            }
-//
-//            val titleMatch = titleRegex.find(alert.summary)
-//            val title = titleMatch?.groupValues?.get(2) ?: ""
-//
-//            val messageCode = messageCodeRegex.find(alert.summary)?.groupValues?.get(1) ?: ""
-//
-//            val dates = stormDateRegex.findAll(alert.summary).toList()
-//
-//            val expirationDate = dates.flatMap {
-//                listOf(
-//                    "${it.groupValues[1]} ${alert.publishedDate.year}",
-//                    "${it.groupValues[1]} ${alert.publishedDate.year + 1}"
-//                )
-//            }.mapNotNull {
-//                DateTimeParser.parse(it, ZoneId.of("UTC"))?.atEndOfDay()
-//            }.filter { Duration.between(alert.publishedDate, it).abs() < Duration.ofDays(14) }
-//                .maxOrNull()
-//
-//            // TODO: High KP watch / warnings
-//
-//            alert.copy(
-//                title = title,
-//                expirationDate = expirationDate
-//                    ?: alert.publishedDate.plusDays(Constants.DEFAULT_EXPIRATION_DAYS),
-//                uniqueId = "geomagnetic-storm",
-//                level = codeToAlertLevel[messageCode] ?: AlertLevel.Information,
-//                useLinkForSummary = false
-//            )
-//        }
-//    }
-//}
+package com.kylecorry.bell.infrastructure.alerts.space_weather
+
+import android.content.Context
+import com.kylecorry.bell.domain.Alert
+import com.kylecorry.bell.domain.Category
+import com.kylecorry.bell.domain.Certainty
+import com.kylecorry.bell.domain.Constants
+import com.kylecorry.bell.domain.Severity
+import com.kylecorry.bell.domain.Urgency
+import com.kylecorry.bell.infrastructure.alerts.AlertLoader
+import com.kylecorry.bell.infrastructure.alerts.AlertSource
+import com.kylecorry.bell.infrastructure.alerts.FileType
+import com.kylecorry.bell.infrastructure.parsers.DateTimeParser
+import com.kylecorry.bell.infrastructure.parsers.selectors.Selector.Companion.text
+import com.kylecorry.sol.time.Time.atEndOfDay
+import java.time.Duration
+import java.time.ZoneId
+
+class SWPCAlertSource(context: Context) : AlertSource {
+
+    private val titleRegex = Regex("(WARNING|ALERT|SUMMARY|WATCH):\\s(.*)")
+    private val stormDateRegex = Regex("([A-Z][a-z]{2}\\s\\d{2}):")
+    private val messageCodeRegex = Regex("Space Weather Message Code: (\\w+)")
+
+    private val loader = AlertLoader(context)
+
+    private val codeToSeverity = mapOf(
+        "ALTK07" to Severity.Minor,
+        "WARK07" to Severity.Minor,
+        "WATA50" to Severity.Minor,
+        "ALTK08" to Severity.Moderate,
+        "ALTK09" to Severity.Moderate,
+        "WATA99" to Severity.Moderate,
+    )
+
+
+    override suspend fun load(): List<Alert> {
+        val rawAlerts = loader.load(
+            FileType.JSON,
+            "https://services.swpc.noaa.gov/products/alerts.json",
+            "$",
+            mapOf(
+                "sent" to text("issue_datetime"),
+                "description" to text("message")
+            )
+        )
+
+        return rawAlerts.mapNotNull {
+            val description = it["description"] ?: return@mapNotNull null
+            val sent = DateTimeParser.parseInstant(it["sent"]?.replace(" ", "T") + "Z")
+                ?: return@mapNotNull null
+
+            // TODO: Handle other types of alerts
+            if (!description.contains("WATCH: Geomagnetic Storm Category")!!) {
+                return@mapNotNull null
+            }
+
+            val messageCode = messageCodeRegex.find(description)?.groupValues?.get(1)
+                ?: return@mapNotNull null
+            val title = titleRegex.find(description)?.groupValues?.get(2)
+                ?: return@mapNotNull null
+
+            val dates = stormDateRegex.findAll(description).toList()
+
+            val expirationDate = dates.flatMap {
+                listOf(
+                    "${it.groupValues[1]} ${sent.atZone(ZoneId.of("UTC")).year}",
+                    "${it.groupValues[1]} ${sent.atZone(ZoneId.of("UTC")).year + 1}"
+                )
+            }.mapNotNull {
+                DateTimeParser.parse(it, ZoneId.of("UTC"))?.atEndOfDay()?.toInstant()
+            }.filter { Duration.between(sent, it).abs() < Duration.ofDays(14) }
+                .maxOrNull()
+
+
+            // TODO: Handle cancelations
+            Alert(
+                id = 0,
+                identifier = "geomagnetic-storm-warning",
+                sender = "SWPC",
+                sent = sent,
+                source = getUUID(),
+                category = Category.Infrastructure,
+                event = title,
+                urgency = Urgency.Unknown,
+                severity = codeToSeverity[messageCode] ?: Severity.Unknown,
+                certainty = Certainty.Unknown,
+                description = description,
+                expires = expirationDate
+                    ?: sent.plus(Duration.ofDays(Constants.DEFAULT_EXPIRATION_DAYS)),
+            )
+        }
+    }
+
+    override fun getUUID(): String {
+        return "62facc3f-53d3-4600-94ec-c55208eff9f8"
+    }
+}

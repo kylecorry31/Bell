@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import com.kylecorry.andromeda.core.tryOrDefault
 import com.kylecorry.bell.domain.Alert
+import com.kylecorry.bell.infrastructure.alerts.space_weather.SWPCAlertSource
 import com.kylecorry.bell.infrastructure.alerts.volcano.USGSVolcanoAlertSource
 import com.kylecorry.bell.infrastructure.alerts.water.USGSWaterAlertSource
 import com.kylecorry.bell.infrastructure.alerts.weather.NationalWeatherServiceAlertSource
@@ -119,7 +120,7 @@ class AlertUpdater(private val context: Context) {
 //            WhiteHousePresidentialActionsAlertSource(context),
 //            USGSEarthquakeAlertSource(context),
             USGSWaterAlertSource(context),
-//            SWPCAlertSource(context),
+            SWPCAlertSource(context),
 //            HealthAlertNetworkAlertSource(context),
             USGSVolcanoAlertSource(context),
 //            CongressionalBillsAlertSource(context),

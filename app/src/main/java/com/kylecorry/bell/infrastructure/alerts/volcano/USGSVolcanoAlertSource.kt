@@ -67,6 +67,7 @@ class USGSVolcanoAlertSource(context: Context) : AlertSource {
                 severity = severity,
                 certainty = Certainty.Unknown,
                 link = it["link"],
+                description = it["description"],
                 area = Area(
                     listOf(state ?: ""), circles = listOf(
                         Geofence(
