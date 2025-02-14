@@ -18,8 +18,8 @@ import com.kylecorry.bell.domain.Category
 import com.kylecorry.bell.infrastructure.persistence.UserPreferences
 import com.kylecorry.bell.infrastructure.utils.StateUtils
 import com.kylecorry.bell.ui.FormatService
-import com.kylecorry.bell.ui.mappers.AlertLevelMapper
-import com.kylecorry.bell.ui.mappers.AlertTypeMapper
+import com.kylecorry.bell.ui.mappers.SeverityMapper
+import com.kylecorry.bell.ui.mappers.CategoryMapper
 
 class AlertListAttributes : ViewAttributes() {
     var alerts: List<Alert> = emptyList()
@@ -60,10 +60,10 @@ fun AlertList(config: AlertListAttributes.() -> Unit) = Component(config) { attr
                 val items = mutableListOf(
                     ListItem(
                         type.ordinal.toLong(),
-                        AlertTypeMapper.getName(context, type),
+                        CategoryMapper.getName(context, type),
                         subtitle = "${alerts.size} alerts",
                         icon = ResourceListIcon(
-                            AlertTypeMapper.getIcon(type),
+                            CategoryMapper.getIcon(type),
                             secondaryTextColor
                         ),
                         trailingIcon = ResourceListIcon(
@@ -86,13 +86,13 @@ fun AlertList(config: AlertListAttributes.() -> Unit) = Component(config) { attr
                             formatter.formatDateTime(it.sent),
                             icon = ResourceListIcon(
                                 R.drawable.alert_circle,
-                                AlertLevelMapper.getColor(it.severity)
+                                SeverityMapper.getColor(it.severity)
                             ),
                             tags = listOf(
                                 ListItemTag(
                                     it.severity.name,
                                     null,
-                                    AlertLevelMapper.getColor(it.severity)
+                                    SeverityMapper.getColor(it.severity)
                                 ),
                             ),
                             longClickAction = {
