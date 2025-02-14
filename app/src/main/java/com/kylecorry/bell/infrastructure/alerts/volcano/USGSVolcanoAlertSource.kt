@@ -75,7 +75,7 @@ class USGSVolcanoAlertSource(context: Context) : AlertSource {
                                 it["latitude"]?.toDoubleOrNull() ?: 0.0,
                                 it["longitude"]?.toDoubleOrNull() ?: 0.0
                             ),
-                            Distance.kilometers(50f)
+                            Distance.kilometers(0f)
                         )
                     )
                 ),

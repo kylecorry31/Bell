@@ -14,6 +14,8 @@ import com.kylecorry.bell.infrastructure.alerts.health.USOutbreaksAlertSource
 import com.kylecorry.bell.infrastructure.alerts.space_weather.SWPCAlertSource
 import com.kylecorry.bell.infrastructure.alerts.travel.TravelAdvisoryAlertSource
 import com.kylecorry.bell.infrastructure.alerts.volcano.USGSVolcanoAlertSource
+import com.kylecorry.bell.infrastructure.alerts.water.NationalTsunamiAlertSource
+import com.kylecorry.bell.infrastructure.alerts.water.PacificTsunamiAlertSource
 import com.kylecorry.bell.infrastructure.alerts.water.USGSWaterAlertSource
 import com.kylecorry.bell.infrastructure.alerts.weather.NationalWeatherServiceAlertSource
 import com.kylecorry.bell.infrastructure.internet.WebPageDownloader
@@ -131,8 +133,8 @@ class AlertUpdater(private val context: Context) {
             HealthAlertNetworkAlertSource(context),
             USGSVolcanoAlertSource(context),
             InciwebWildfireAlertSource(context),
-//            NationalTsunamiAlertSource(context),
-//            PacificTsunamiAlertSource(context),
+            NationalTsunamiAlertSource(context),
+            PacificTsunamiAlertSource(context),
             TravelAdvisoryAlertSource(context),
             BLSSummaryAlertSource(context),
             FuelPricesAlertSource(context),

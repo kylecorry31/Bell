@@ -92,7 +92,7 @@ class USGSEarthquakeAlertSource(context: Context) : AlertSource {
                     Area(
                         listOf(),
                         circles = listOf(
-                            Geofence(Coordinate(lat, lon), Distance.kilometers(100f))
+                            Geofence(Coordinate(lat, lon), Distance.kilometers(0f))
                         )
                     )
                 }
