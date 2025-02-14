@@ -101,7 +101,7 @@ fun AlertList(config: AlertListAttributes.() -> Unit) = Component(config) { attr
                         ) {
                             val content =
                                 buildSpannedString {
-                                    if (it.headline != null) {
+                                    if (it.headline != null && it.headline != it.event) {
                                         appendLine(it.headline)
                                         appendLine()
                                     }
@@ -149,6 +149,16 @@ fun AlertList(config: AlertListAttributes.() -> Unit) = Component(config) { attr
                                         appendLine(formatter.formatMarkdown(it.instruction.trim()))
                                         appendLine()
                                     }
+
+                                    if (it.parameters != null) {
+                                        val sortedParameters =
+                                            it.parameters.toList().sortedBy { it.first }
+                                        val parameterString = sortedParameters.joinToString("\n") {
+                                            "- **${it.first}**: ${it.second}"
+                                        }
+                                        appendLine(formatter.formatMarkdown(parameterString))
+                                    }
+
                                 }.toSpannable()
                             LinkifyCompat.addLinks(content, Linkify.WEB_URLS)
 

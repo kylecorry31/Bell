@@ -6,6 +6,7 @@ import com.kylecorry.andromeda.core.tryOrDefault
 import com.kylecorry.bell.domain.Alert
 import com.kylecorry.bell.infrastructure.alerts.crime.IC3InternetCrimeAlertSource
 import com.kylecorry.bell.infrastructure.alerts.earthquake.USGSEarthquakeAlertSource
+import com.kylecorry.bell.infrastructure.alerts.economy.FuelPricesAlertSource
 import com.kylecorry.bell.infrastructure.alerts.fire.InciwebWildfireAlertSource
 import com.kylecorry.bell.infrastructure.alerts.health.HealthAlertNetworkAlertSource
 import com.kylecorry.bell.infrastructure.alerts.health.USOutbreaksAlertSource
@@ -133,8 +134,7 @@ class AlertUpdater(private val context: Context) {
 //            PacificTsunamiAlertSource(context),
             TravelAdvisoryAlertSource(context),
 //            BLSSummaryAlertSource(context),
-//            GasolineDieselPricesAlertSource(context),
-//            HeatingOilPropanePricesAlertSource(context),
+            FuelPricesAlertSource(context),
             USOutbreaksAlertSource(context),
             IC3InternetCrimeAlertSource(context)
         )

@@ -100,6 +100,7 @@ object DateTimeParser {
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss z"),
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss Z"),
             DateTimeFormatter.ofPattern("dd MMM yyyy HH:mm:ss z"),
+            DateTimeFormatter.ofPattern("yyyy MMM dd HHmm z"),
         )
 
         for (pattern in patterns) {
