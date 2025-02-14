@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import com.kylecorry.andromeda.core.tryOrDefault
 import com.kylecorry.bell.domain.Alert
+import com.kylecorry.bell.infrastructure.alerts.volcano.USGSVolcanoAlertSource
 import com.kylecorry.bell.infrastructure.alerts.water.USGSWaterAlertSource
 import com.kylecorry.bell.infrastructure.alerts.weather.NationalWeatherServiceAlertSource
 import com.kylecorry.bell.infrastructure.internet.WebPageDownloader
@@ -45,13 +46,11 @@ class AlertUpdater(private val context: Context) {
                 // TODO: If this fails, let the user know
                 val sourceAlerts = it.load()
                     .filter {
-                        it.isValid() && (it.area == null || it.area.states.any {
-                            StateUtils.isSelectedState(
-                                state,
-                                it,
-                                true
-                            )
-                        })
+                        it.isValid() && StateUtils.shouldShowAlert(
+                            state,
+                            it.area,
+                            true
+                        )
                     }
                     .sortedByDescending { it.sent }
                     .distinctBy { it.identifier }
@@ -122,7 +121,7 @@ class AlertUpdater(private val context: Context) {
             USGSWaterAlertSource(context),
 //            SWPCAlertSource(context),
 //            HealthAlertNetworkAlertSource(context),
-//            USGSVolcanoAlertSource(context),
+            USGSVolcanoAlertSource(context),
 //            CongressionalBillsAlertSource(context),
 //            InciwebWildfireAlertSource(context),
 //            NationalTsunamiAlertSource(context),

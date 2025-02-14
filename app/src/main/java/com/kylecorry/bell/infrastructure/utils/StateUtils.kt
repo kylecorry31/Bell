@@ -1,5 +1,7 @@
 package com.kylecorry.bell.infrastructure.utils
 
+import com.kylecorry.bell.domain.Area
+
 // TODO: Add US territories
 object StateUtils {
 
@@ -110,8 +112,20 @@ object StateUtils {
         "WY" to setOf("MT", "SD", "NE", "CO", "UT", "ID")
     )
 
+    fun shouldShowAlert(
+        selectedState: String,
+        area: Area?,
+        includeBorderingStates: Boolean = false
+    ): Boolean {
+        if (area == null) {
+            return true
+        }
 
-    fun isSelectedState(
+        return shouldShowAlert(selectedState, area.states.joinToString(","), includeBorderingStates)
+    }
+
+
+    fun shouldShowAlert(
         selectedState: String,
         state: String,
         includeBorderingStates: Boolean = false
@@ -132,6 +146,17 @@ object StateUtils {
         val states = state.split(",").map { it.trim().uppercase() }.map { stateCodeMap[it] ?: it }
 
         return states.any { selectedStates.contains(it) }
+    }
+
+    fun isState(state: String): Boolean {
+        return stateCodeMap.containsKey(state.uppercase()) || stateBorders.containsKey(state.uppercase())
+    }
+
+    fun getStateCode(state: String): String? {
+        if (stateBorders.containsKey(state.uppercase())) {
+            return state.uppercase()
+        }
+        return stateCodeMap[state.uppercase()]
     }
 
 }

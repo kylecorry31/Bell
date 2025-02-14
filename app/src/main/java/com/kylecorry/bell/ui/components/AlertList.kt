@@ -15,6 +15,8 @@ import com.kylecorry.andromeda.views.reactivity.ViewAttributes
 import com.kylecorry.bell.R
 import com.kylecorry.bell.domain.Alert
 import com.kylecorry.bell.domain.Category
+import com.kylecorry.bell.infrastructure.persistence.UserPreferences
+import com.kylecorry.bell.infrastructure.utils.StateUtils
 import com.kylecorry.bell.ui.FormatService
 import com.kylecorry.bell.ui.mappers.AlertLevelMapper
 import com.kylecorry.bell.ui.mappers.AlertTypeMapper
@@ -33,9 +35,24 @@ fun AlertList(config: AlertListAttributes.() -> Unit) = Component(config) { attr
         FormatService.getInstance(context)
     }
 
-    val listItems = useMemo(attrs.alerts, attrs.onDelete, formatter, context, openTypes) {
+    val preferences = useMemo(context) {
+        UserPreferences(context)
+    }
+
+    val state = preferences.state
+
+    val alertsToShow = useMemo(attrs.alerts, state) {
+        attrs.alerts.filter {
+            it.isValid() && StateUtils.shouldShowAlert(
+                state,
+                it.area,
+                true
+            )
+        }
+    }
+
+    val listItems = useMemo(alertsToShow, attrs.onDelete, formatter, context, openTypes) {
         val secondaryTextColor = Resources.androidTextColorSecondary(context)
-        val alertsToShow = attrs.alerts.filter { it.isValid() }
         alertsToShow.groupBy { it.category }
             .toList()
             .sortedBy { it.first.ordinal }

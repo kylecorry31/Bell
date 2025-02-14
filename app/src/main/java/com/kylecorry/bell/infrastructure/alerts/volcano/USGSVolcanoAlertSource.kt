@@ -1,55 +1,88 @@
-//package com.kylecorry.bell.infrastructure.alerts.volcano
-//
-//import android.content.Context
-//import com.kylecorry.bell.domain.Alert
-//import com.kylecorry.bell.domain.AlertLevel
-//import com.kylecorry.bell.domain.AlertType
-//import com.kylecorry.bell.domain.SourceSystem
-//import com.kylecorry.bell.infrastructure.alerts.AlertSpecification
-//import com.kylecorry.bell.infrastructure.alerts.BaseAlertSource
-//import com.kylecorry.bell.infrastructure.parsers.selectors.Selector
-//import com.kylecorry.bell.infrastructure.utils.StateUtils
-//
-//class USGSVolcanoAlertSource(context: Context) : BaseAlertSource(context) {
-//
-//    override fun getSpecification(): AlertSpecification {
-//        return json(
-//            SourceSystem.USGSVolcano,
-//            "https://volcanoes.usgs.gov/vsc/api/volcanoApi/elevated",
-//            items = "$",
-//            title = Selector.text("vName"),
-//            link = Selector.text("noticeUrl"),
-//            uniqueId = Selector.text("vnum"),
-//            publishedDate = Selector.text("alertDate") { it?.replace(" ", "T") + "Z" },
-//            summary = Selector.text("noticeSynopsis"),
-//            additionalAttributes = mapOf(
-//                "alertLevel" to Selector.text("alertLevel"),
-//                "volcanoCode" to Selector.text("volcanoCd")
-//            ),
-//            defaultAlertType = AlertType.Volcano,
-//        )
-//    }
-//
-//    override fun process(alerts: List<Alert>): List<Alert> {
-//        return alerts.mapNotNull {
-//            val code = it.additionalAttributes["volcanoCode"] ?: ""
-//            val state = code.takeWhile { it.isLetter() }
-//
-//            if (!StateUtils.isSelectedState(this.state, state, true)) {
-//                return@mapNotNull null
-//            }
-//
-//            val level = when (it.additionalAttributes["alertLevel"]?.lowercase()) {
-//                "advisory" -> AlertLevel.Low
-//                "watch" -> AlertLevel.Medium
-//                "warning" -> AlertLevel.High
-//                else -> null
-//            } ?: return@mapNotNull null
-//            it.copy(
-//                title = "Volcano ${level.name} for ${it.title}",
-//                level = level,
-//                useLinkForSummary = false
-//            )
-//        }
-//    }
-//}
+package com.kylecorry.bell.infrastructure.alerts.volcano
+
+import android.content.Context
+import com.kylecorry.andromeda.core.capitalizeWords
+import com.kylecorry.bell.domain.Alert
+import com.kylecorry.bell.domain.Area
+import com.kylecorry.bell.domain.Category
+import com.kylecorry.bell.domain.Certainty
+import com.kylecorry.bell.domain.Severity
+import com.kylecorry.bell.domain.Urgency
+import com.kylecorry.bell.infrastructure.alerts.AlertLoader
+import com.kylecorry.bell.infrastructure.alerts.AlertSource
+import com.kylecorry.bell.infrastructure.alerts.FileType
+import com.kylecorry.bell.infrastructure.parsers.DateTimeParser
+import com.kylecorry.bell.infrastructure.parsers.selectors.Selector.Companion.text
+import com.kylecorry.bell.infrastructure.utils.StateUtils
+import com.kylecorry.sol.science.geology.Geofence
+import com.kylecorry.sol.units.Coordinate
+import com.kylecorry.sol.units.Distance
+
+class USGSVolcanoAlertSource(context: Context) : AlertSource {
+
+    private val loader = AlertLoader(context)
+
+    override suspend fun load(): List<Alert> {
+        val rawAlerts = loader.load(
+            FileType.JSON,
+            "https://volcanoes.usgs.gov/vsc/api/volcanoApi/elevated",
+            "$",
+            mapOf(
+                "name" to text("vName"),
+                "link" to text("noticeUrl"),
+                "identifier" to text("vnum"),
+                "sent" to text("sentUtc"),
+                "description" to text("noticeSynopsis"),
+                "alertLevel" to text("alertLevel"),
+                "volcanoCode" to text("volcanoCd"),
+                "latitude" to text("lat"),
+                "longitude" to text("long"),
+                "threat" to text("nvewsThreat")
+            )
+        )
+
+        return rawAlerts.mapNotNull {
+            val state =
+                it["volcanoCode"]?.takeWhile { it.isLetter() }?.let { StateUtils.getStateCode(it) }
+
+            val severity = when (it["threat"]) {
+                "Very High Threat" -> Severity.Extreme
+                "High Threat" -> Severity.Severe
+                "Moderate Threat" -> Severity.Moderate
+                else -> Severity.Minor
+            }
+
+            Alert(
+                id = 0,
+                identifier = it["identifier"] ?: "",
+                sender = "USGS",
+                sent = DateTimeParser.parseInstant(it["sent"]?.let { it.replace(" ", "T") + "Z" }
+                    ?: "") ?: return@mapNotNull null,
+                source = getUUID(),
+                category = Category.Geophysical,
+                event = "Volcano ${
+                    it["alertLevel"]?.lowercase()?.capitalizeWords()
+                } for ${it["name"]}",
+                urgency = Urgency.Unknown, // TODO: Determine urgency from alert level
+                severity = severity,
+                certainty = Certainty.Unknown,
+                link = it["link"],
+                area = Area(
+                    listOf(state ?: ""), circles = listOf(
+                        Geofence(
+                            Coordinate(
+                                it["latitude"]?.toDoubleOrNull() ?: 0.0,
+                                it["longitude"]?.toDoubleOrNull() ?: 0.0
+                            ),
+                            Distance.kilometers(50f)
+                        )
+                    )
+                ),
+            )
+        }
+    }
+
+    override fun getUUID(): String {
+        return "c0617b66-6ed5-48d7-8b5c-bc51b6f81764"
+    }
+}
