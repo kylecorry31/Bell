@@ -106,17 +106,49 @@ fun AlertList(config: AlertListAttributes.() -> Unit) = Component(config) { attr
                                         appendLine()
                                     }
 
-                                    appendLine(formatter.formatDateTime(it.sent))
+                                    appendLine("Sent: ${formatter.formatDateTime(it.sent)}")
                                     appendLine()
+
+                                    if (it.effective != null) {
+                                        appendLine("Effective: ${formatter.formatDateTime(it.effective)}")
+                                        appendLine()
+                                    }
+
+                                    if (it.onset != null) {
+                                        appendLine("Onset: ${formatter.formatDateTime(it.onset)}")
+                                        appendLine()
+                                    }
+
+                                    if (it.expires != null) {
+                                        appendLine("Expires: ${formatter.formatDateTime(it.expires)}")
+                                        appendLine()
+                                    }
+
+                                    appendLine("Severity: ${it.severity.name}")
+                                    appendLine("Urgency: ${it.urgency.name}")
+                                    appendLine("Certainty: ${it.certainty.name}")
+                                    appendLine()
+
+                                    if (it.area != null) {
+                                        appendLine("Area: ${it.area.areaDescription}")
+                                        appendLine()
+                                    }
+
                                     if (it.link != null) {
                                         appendLine(it.link.trimEnd('/'))
                                         appendLine()
                                     }
-                                    appendLine(
-                                        formatter.formatMarkdown(
-                                            it.description?.trim() ?: ""
-                                        )
-                                    )
+
+                                    if (it.description != null) {
+                                        appendLine(formatter.formatMarkdown(it.description.trim()))
+                                        appendLine()
+                                    }
+
+                                    if (it.instruction != null) {
+                                        appendLine("Instructions:")
+                                        appendLine(formatter.formatMarkdown(it.instruction.trim()))
+                                        appendLine()
+                                    }
                                 }.toSpannable()
                             LinkifyCompat.addLinks(content, Linkify.WEB_URLS)
 

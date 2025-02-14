@@ -25,12 +25,10 @@ class SWPCAlertSource(context: Context) : AlertSource {
     private val loader = AlertLoader(context)
 
     private val codeToSeverity = mapOf(
-        "ALTK07" to Severity.Minor,
-        "WARK07" to Severity.Minor,
-        "WATA50" to Severity.Minor,
         "ALTK08" to Severity.Moderate,
         "ALTK09" to Severity.Moderate,
         "WATA99" to Severity.Moderate,
+        // Everything else is minor
     )
 
 
@@ -83,7 +81,7 @@ class SWPCAlertSource(context: Context) : AlertSource {
                 category = Category.Infrastructure,
                 event = title,
                 urgency = Urgency.Unknown,
-                severity = codeToSeverity[messageCode] ?: Severity.Unknown,
+                severity = codeToSeverity[messageCode] ?: Severity.Minor,
                 certainty = Certainty.Unknown,
                 description = description,
                 expires = expirationDate
