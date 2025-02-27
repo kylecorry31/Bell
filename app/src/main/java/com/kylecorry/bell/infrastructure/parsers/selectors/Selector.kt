@@ -213,9 +213,16 @@ private fun selectJson(node: Any, selector: Selector): String? {
         ""
     }).trimEnd('.').replace(" ", ".")
 
-    val elements: Any = JsonPath.read(
-        node, fullSelector
-    )
+    val elements = try {
+        if (node is String){
+            JsonPath.read(node.toString(), fullSelector)
+        } else {
+            JsonPath.read<Any>(node, fullSelector)
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
+        return null
+    }
     val selectedElement = if (elements is List<*> && elements.isEmpty()) {
         null
     } else if (elements is List<*> && selector.index == null) {

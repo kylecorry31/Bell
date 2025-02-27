@@ -13,6 +13,7 @@ import com.kylecorry.bell.infrastructure.alerts.fire.InciwebWildfireAlertSource
 import com.kylecorry.bell.infrastructure.alerts.health.HealthAlertNetworkAlertSource
 import com.kylecorry.bell.infrastructure.alerts.health.USOutbreaksAlertSource
 import com.kylecorry.bell.infrastructure.alerts.space_weather.SWPCAlertSource
+import com.kylecorry.bell.infrastructure.alerts.space_weather.SentryAsteroidAlertSource
 import com.kylecorry.bell.infrastructure.alerts.travel.TravelAdvisoryAlertSource
 import com.kylecorry.bell.infrastructure.alerts.volcano.USGSVolcanoAlertSource
 import com.kylecorry.bell.infrastructure.alerts.water.NationalTsunamiAlertSource
@@ -141,7 +142,8 @@ class AlertUpdater(private val context: Context) {
             FuelPricesAlertSource(context),
             USOutbreaksAlertSource(context),
             IC3InternetCrimeAlertSource(context),
-            NationalTerrorismAdvisoryAlertSource(context)
+            NationalTerrorismAdvisoryAlertSource(context),
+            SentryAsteroidAlertSource(context)
         )
     }
 

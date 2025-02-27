@@ -4,7 +4,6 @@ import android.content.Context
 import com.kylecorry.bell.domain.Alert
 import com.kylecorry.bell.domain.Category
 import com.kylecorry.bell.domain.Certainty
-import com.kylecorry.bell.domain.Constants
 import com.kylecorry.bell.domain.Severity
 import com.kylecorry.bell.domain.Urgency
 import com.kylecorry.bell.infrastructure.alerts.AlertLoader
