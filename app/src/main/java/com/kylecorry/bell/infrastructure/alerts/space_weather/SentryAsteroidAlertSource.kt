@@ -34,7 +34,7 @@ class SentryAsteroidAlertSource(context: Context) : AlertSource {
         7 to "A very close encounter by a large object, which if occurring over the next century, poses an unprecedented but still uncertain threat of a global catastrophe. For such a threat, international contingency planning is warranted, especially to determine urgently and conclusively whether or not a collision will occur.",
         8 to "A collision is certain, capable of causing localized destruction for an impact over land or possibly a tsunami if close offshore.",
         9 to "A collision is certain, capable of causing unprecedented regional devastation for a land impact or the threat of a major tsunami for an ocean impact.",
-        20 to "A collision is certain, capable of causing global climatic catastrophe that may threaten the future of civilization as we know it, whether impacting land or ocean."
+        10 to "A collision is certain, capable of causing global climatic catastrophe that may threaten the future of civilization as we know it, whether impacting land or ocean."
     )
 
     private val ignoreLowLevels = true
