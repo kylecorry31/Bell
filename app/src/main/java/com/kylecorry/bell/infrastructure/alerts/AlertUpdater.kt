@@ -151,12 +151,11 @@ class AlertUpdater(private val context: Context) {
         val sources = getSources()
 
         // Load the full text if it should use the link for the summary
-        val fullText = tryOrDefault(alert.description) {
-            if (alert.link != null) {
-                pageDownloader.download(alert.link)
-            } else {
-                alert.description
-            }
+        val fullText = if (alert.link != null) {
+            pageDownloader.download(alert.link) ?: pageDownloader.downloadAsBrowser(alert.link)
+            ?: alert.description
+        } else {
+            alert.description
         } ?: ""
 
         val source = sources.find { it.getUUID() == alert.source }
