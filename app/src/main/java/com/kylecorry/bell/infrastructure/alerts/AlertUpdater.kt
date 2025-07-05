@@ -122,14 +122,8 @@ class AlertUpdater(private val context: Context) {
             completedSummaryCount++
         }
 
-        val currentAlerts = repo.getAll()
-        onAlertsUpdated(currentAlerts)
-
-        // Get newly added alerts
-        return currentAlerts
-            .filter { it.isTracked && !alerts.any { existing -> existing.identifier == it.identifier && existing.source == it.source } }
-            .sortedByDescending { it.sent }
-            .distinctBy { it.identifier }
+        onAlertsUpdated(repo.getAll())
+        return newAlerts
     }
 
     private fun getSources(): List<AlertSource> {
