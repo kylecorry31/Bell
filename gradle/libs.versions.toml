@@ -1,5 +1,5 @@
 [versions]
-androidApplication = "8.10.1"
+androidApplication = "8.11.0"
 andromedaVersion = "14.4.3"
 constraintlayout = "2.2.1"
 coreKtx = "1.16.0"
