@@ -37,7 +37,8 @@ class AlertUpdater(private val context: Context) {
     suspend fun update(
         setProgress: (Float) -> Unit = {},
         setLoadingMessage: (String) -> Unit = {},
-        onAlertsUpdated: (List<Alert>) -> Unit = {}
+        onAlertsUpdated: (List<Alert>) -> Unit = {},
+        onlyUpdateVitalAlerts: Boolean = false
     ): List<Alert> {
         repo.cleanup()
 
@@ -45,7 +46,7 @@ class AlertUpdater(private val context: Context) {
 
         val alerts = repo.getAll()
 
-        val sources = getSources()
+        val sources = getSources(onlyUpdateVitalAlerts)
 
         var completedCount = 0
         val totalCount = sources.size
@@ -95,8 +96,9 @@ class AlertUpdater(private val context: Context) {
         }
 
         // Delete any alerts that are no longer present
+        val sourceIds = sources.map { it.getUUID() }
         val toDelete = alerts.filterNot {
-            !failedSources.contains(it.source) && allAlerts.any { alert -> alert.identifier == it.identifier && alert.source == it.source }
+            sourceIds.contains(it.source) && !failedSources.contains(it.source) && allAlerts.any { alert -> alert.identifier == it.identifier && alert.source == it.source }
         }
         toDelete.forEach { repo.delete(it) }
         onAlertsUpdated(repo.getAll())
@@ -126,24 +128,24 @@ class AlertUpdater(private val context: Context) {
         return newAlerts
     }
 
-    private fun getSources(): List<AlertSource> {
-        return listOf(
+    private fun getSources(vitalOnly: Boolean = false): List<AlertSource> {
+        return listOfNotNull(
             NationalWeatherServiceAlertSource(context, preferences.state),
-            USGSEarthquakeAlertSource(context),
-            USGSWaterAlertSource(context),
-            SWPCAlertSource(context),
-            HealthAlertNetworkAlertSource(context),
+            if (!vitalOnly) USGSEarthquakeAlertSource(context) else null,
+            if (!vitalOnly) USGSWaterAlertSource(context) else null,
+            if (!vitalOnly) SWPCAlertSource(context) else null,
+            if (!vitalOnly) HealthAlertNetworkAlertSource(context) else null,
             USGSVolcanoAlertSource(context),
             InciwebWildfireAlertSource(context),
             NationalTsunamiAlertSource(context),
             PacificTsunamiAlertSource(context),
-            TravelAdvisoryAlertSource(context),
-            BLSSummaryAlertSource(context),
-            FuelPricesAlertSource(context),
-            USOutbreaksAlertSource(context),
-            IC3InternetCrimeAlertSource(context),
-            NationalTerrorismAdvisoryAlertSource(context),
-            SentryAsteroidAlertSource(context)
+            if (!vitalOnly) TravelAdvisoryAlertSource(context) else null,
+            if (!vitalOnly) BLSSummaryAlertSource(context) else null,
+            if (!vitalOnly) FuelPricesAlertSource(context) else null,
+            if (!vitalOnly) USOutbreaksAlertSource(context) else null,
+            if (!vitalOnly) IC3InternetCrimeAlertSource(context) else null,
+            if (!vitalOnly) NationalTerrorismAdvisoryAlertSource(context) else null,
+            if (!vitalOnly) SentryAsteroidAlertSource(context) else null
         )
     }
 

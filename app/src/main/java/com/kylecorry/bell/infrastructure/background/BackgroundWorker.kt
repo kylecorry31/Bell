@@ -1,11 +1,16 @@
 package com.kylecorry.bell.infrastructure.background
 
 import android.content.Context
+import android.net.ConnectivityManager
 import android.util.Log
+import androidx.core.content.getSystemService
+import androidx.work.Constraints
 import androidx.work.CoroutineWorker
+import androidx.work.NetworkType
 import androidx.work.WorkerParameters
 import com.kylecorry.andromeda.background.IPeriodicTaskScheduler
 import com.kylecorry.andromeda.background.PeriodicTaskSchedulerFactory
+import com.kylecorry.andromeda.background.WorkTaskScheduler
 import com.kylecorry.andromeda.notify.Notify
 import com.kylecorry.bell.R
 import com.kylecorry.bell.app.NavigationUtils
@@ -20,7 +25,7 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
 
     override suspend fun doWork(): Result {
         Log.d("BackgroundWorker", "Updating alerts")
-        val newAlerts = AlertUpdater(applicationContext).update()
+        val newAlerts = AlertUpdater(applicationContext).update(onlyUpdateVitalAlerts = isMetered())
         val importantAlerts =
             newAlerts.filter { it.severity != Severity.Minor && it.severity != Severity.Unknown }
 
@@ -48,6 +53,11 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
         return Result.success()
     }
 
+    private fun isMetered(): Boolean {
+        val connectivityManager = applicationContext.getSystemService<ConnectivityManager>()
+        return connectivityManager?.isActiveNetworkMetered == true
+    }
+
     companion object {
         private const val UNIQUE_ID = 17023481
 
@@ -60,9 +70,13 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
         }
 
         private fun scheduler(context: Context): IPeriodicTaskScheduler {
-            return PeriodicTaskSchedulerFactory(context).deferrable(
+            return WorkTaskScheduler(
+                context.applicationContext,
                 BackgroundWorker::class.java,
-                UNIQUE_ID
+                WorkTaskScheduler.createStringId(context, UNIQUE_ID),
+                constraints = Constraints.Builder()
+                    .setRequiredNetworkType(NetworkType.CONNECTED)
+                    .build()
             )
         }
     }
