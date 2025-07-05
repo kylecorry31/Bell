@@ -148,8 +148,10 @@ object StateUtils {
         return states.any { selectedStates.contains(it) }
     }
 
-    fun isState(state: String): Boolean {
-        return stateCodeMap.containsKey(state.uppercase()) || stateBorders.containsKey(state.uppercase())
+    fun isState(state: String, checkForCode: Boolean = true): Boolean {
+        return stateCodeMap.containsKey(state.uppercase()) || (checkForCode && stateBorders.containsKey(
+            state.uppercase()
+        ))
     }
 
     fun getStateCode(state: String): String? {

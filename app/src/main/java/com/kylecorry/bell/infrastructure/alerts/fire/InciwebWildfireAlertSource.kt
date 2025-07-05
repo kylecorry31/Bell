@@ -14,6 +14,8 @@ import com.kylecorry.bell.infrastructure.alerts.FileType
 import com.kylecorry.bell.infrastructure.parsers.DateTimeParser
 import com.kylecorry.bell.infrastructure.parsers.selectors.Selector.Companion.text
 import com.kylecorry.bell.infrastructure.utils.HtmlTextFormatter
+import com.kylecorry.bell.infrastructure.utils.SimpleWordTokenizer
+import com.kylecorry.bell.infrastructure.utils.StateUtils
 import org.jsoup.Jsoup
 import java.time.ZoneId
 
@@ -64,7 +66,12 @@ class InciwebWildfireAlertSource(context: Context) : AlertSource {
                 ?.let { DateTimeParser.parseInstant(it, ZoneId.of("America/New_York")) }
                 ?: originalSent
 
-            val state = stateRegex.find(description)?.groupValues?.get(1)
+            var state = stateRegex.find(description)?.groupValues?.get(1)
+            if (state.isNullOrBlank()) {
+                val words = SimpleWordTokenizer().tokenize(description).toSet()
+                state = words.firstOrNull { word -> StateUtils.isState(word, false) }
+                    ?: words.firstOrNull { word -> StateUtils.isState(word, true) }
+            }
 
             val fireName = fireNameRegex.find(title)?.groupValues?.get(1)?.let { "($it)" } ?: ""
 
