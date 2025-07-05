@@ -100,6 +100,7 @@ dependencies {
     implementation(libs.luna)
 
     // Andromeda
+    implementation(libs.andromeda.background)
     implementation(libs.andromeda.core)
     implementation(libs.andromeda.fragments)
     implementation(libs.andromeda.exceptions)

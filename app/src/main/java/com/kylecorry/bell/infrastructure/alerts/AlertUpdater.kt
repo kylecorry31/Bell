@@ -2,7 +2,6 @@ package com.kylecorry.bell.infrastructure.alerts
 
 import android.content.Context
 import android.util.Log
-import com.kylecorry.andromeda.core.tryOrDefault
 import com.kylecorry.bell.domain.Alert
 import com.kylecorry.bell.infrastructure.alerts.crime.IC3InternetCrimeAlertSource
 import com.kylecorry.bell.infrastructure.alerts.crime.NationalTerrorismAdvisoryAlertSource
@@ -39,7 +38,7 @@ class AlertUpdater(private val context: Context) {
         setProgress: (Float) -> Unit = {},
         setLoadingMessage: (String) -> Unit = {},
         onAlertsUpdated: (List<Alert>) -> Unit = {}
-    ) {
+    ): List<Alert> {
         repo.cleanup()
 
         val state = preferences.state
@@ -123,7 +122,14 @@ class AlertUpdater(private val context: Context) {
             completedSummaryCount++
         }
 
-        onAlertsUpdated(repo.getAll())
+        val currentAlerts = repo.getAll()
+        onAlertsUpdated(currentAlerts)
+
+        // Get newly added alerts
+        return currentAlerts
+            .filter { it.isTracked && !alerts.any { existing -> existing.identifier == it.identifier && existing.source == it.source } }
+            .sortedByDescending { it.sent }
+            .distinctBy { it.identifier }
     }
 
     private fun getSources(): List<AlertSource> {

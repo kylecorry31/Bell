@@ -1,6 +1,6 @@
 [versions]
 androidApplication = "8.11.0"
-andromedaVersion = "14.4.3"
+andromedaVersion = "15.2.0"
 constraintlayout = "2.2.1"
 coreKtx = "1.16.0"
 appcompat = "1.7.1"
@@ -8,26 +8,26 @@ desugar_jdk_libs = "2.1.5"
 espressoCoreVersion = "3.6.1"
 gridlayout = "1.1.0"
 flexbox = "3.0.0"
-junit5Version = "5.13.0"
+junit5Version = "5.13.2"
 junit = "1.2.1"
-junitPlatformRunner = "1.13.0"
+junitPlatformRunner = "1.13.2"
 junitVersion = "4.13.2"
-kotlinAndroidVersion = "2.1.21"
-kotlinxCoroutinesAndroid = "1.8.0"
+kotlinAndroidVersion = "2.2.0"
+kotlinxCoroutinesAndroid = "1.10.2"
 ksp = "2.1.21-2.0.1"
 legacySupportV4 = "1.0.0"
 lifecycleService = "2.9.1"
-material = "1.10.0"
-mockitoKotlinVersion = "5.1.0"
-navigationFragmentKtx = "2.9.0"
-roomVersion = "2.7.1"
+material = "1.12.0"
+mockitoKotlinVersion = "5.4.0"
+navigationFragmentKtx = "2.9.1"
+roomVersion = "2.7.2"
 sol = "11.2.0"
 luna = "0.3.6"
-workRuntimeKtx = "2.10.1"
+workRuntimeKtx = "2.10.2"
 preferenceKtx = "1.2.1"
 volley = "1.2.1"
-jsoup = "1.18.3"
-gson = "2.12.1"
+jsoup = "1.21.1"
+gson = "2.13.1"
 jsonpath = "2.9.0"
 
 [libraries]
@@ -48,6 +48,7 @@ androidx-work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version
 androidx-preference-ktx = { module = "androidx.preference:preference-ktx", version.ref = "preferenceKtx" }
 androidx-gridlayout = { module = "androidx.gridlayout:gridlayout", version.ref = "gridlayout" }
 andromeda-alerts = { module = "com.kylecorry.andromeda:alerts", version.ref = "andromedaVersion" }
+andromeda-background = { module = "com.kylecorry.andromeda:background", version.ref = "andromedaVersion" }
 andromeda-core = { module = "com.kylecorry.andromeda:core", version.ref = "andromedaVersion" }
 andromeda-exceptions = { module = "com.kylecorry.andromeda:exceptions", version.ref = "andromedaVersion" }
 andromeda-files = { module = "com.kylecorry.andromeda:files", version.ref = "andromedaVersion" }

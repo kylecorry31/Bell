@@ -1,6 +1,8 @@
 package com.kylecorry.bell.ui
 
+import android.Manifest
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
@@ -19,7 +21,13 @@ import com.kylecorry.bell.app.NavigationUtils.setupWithNavController
 
 class MainActivity : AndromedaActivity() {
 
-    private val permissions = mutableListOf<String>()
+    private val permissions = listOfNotNull(
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            Manifest.permission.POST_NOTIFICATIONS
+        } else {
+            null
+        }
+    )
 
     private lateinit var bottomNavigation: BottomNavigationView
 

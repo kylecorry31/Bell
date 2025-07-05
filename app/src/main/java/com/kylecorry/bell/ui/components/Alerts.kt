@@ -3,6 +3,7 @@ package com.kylecorry.bell.ui.components
 import android.text.TextWatcher
 import android.view.Gravity
 import android.view.ViewGroup
+import com.kylecorry.andromeda.alerts.Alerts
 import com.kylecorry.andromeda.core.ui.useCallback
 import com.kylecorry.andromeda.core.ui.useSizeDp
 import com.kylecorry.andromeda.fragments.inBackground
@@ -16,6 +17,7 @@ import com.kylecorry.bell.domain.Alert
 import com.kylecorry.bell.infrastructure.alerts.AlertUpdater
 import com.kylecorry.bell.infrastructure.persistence.AlertRepo
 import com.kylecorry.bell.infrastructure.persistence.UserPreferences
+import com.kylecorry.luna.coroutines.onMain
 
 
 fun Alerts() = Component {
@@ -49,11 +51,15 @@ fun Alerts() = Component {
         setLoadingMessage("sources")
         setProgress(0f)
         inBackground {
-            AlertUpdater(context).update(
+            val newAlerts = AlertUpdater(context).update(
                 setProgress = setProgress,
                 setLoadingMessage = setLoadingMessage,
                 onAlertsUpdated = setAlerts
             )
+            // TODO: Highlight new alerts instead
+            onMain {
+                Alerts.toast(context, "${newAlerts.size} new alerts")
+            }
             setLoading(false)
         }
     }
@@ -83,7 +89,8 @@ fun Alerts() = Component {
     }
 
     Column(
-        Row({
+        Row(
+            {
             marginTop = dp16
             marginStart = dp16
             marginEnd = dp16
