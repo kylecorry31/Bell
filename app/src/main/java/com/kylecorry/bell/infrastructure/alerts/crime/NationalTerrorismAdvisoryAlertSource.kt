@@ -14,6 +14,7 @@ import com.kylecorry.bell.infrastructure.parsers.DateTimeParser
 import com.kylecorry.bell.infrastructure.parsers.selectors.Selector.Companion.allText
 import com.kylecorry.bell.infrastructure.parsers.selectors.Selector.Companion.attr
 import com.kylecorry.bell.infrastructure.parsers.selectors.Selector.Companion.text
+import com.kylecorry.bell.infrastructure.utils.HtmlTextFormatter
 import java.time.ZoneId
 
 class NationalTerrorismAdvisoryAlertSource(context: Context) : AlertSource {
@@ -22,16 +23,16 @@ class NationalTerrorismAdvisoryAlertSource(context: Context) : AlertSource {
 
     override suspend fun load(): List<Alert> {
         val rawAlerts = loader.load(
-            FileType.XML,
+            FileType.HTML,
             "https://www.dhs.gov/ntas/1.1/feed.xml",
             "alert",
             mapOf(
-                "start" to attr("alert", "effective"),
-                "end" to attr("alert", "expires"),
-                "link" to attr("alert", "link"),
+                "start" to attr("alert", "start"),
+                "end" to attr("alert", "end"),
+                "link" to attr("alert", "href"),
                 "type" to attr("alert", "type"),
-                "summary" to text("summary"),
-                "details" to text("details"),
+                "summary" to text("summary", raw = true),
+                "details" to text("details", raw = true),
                 "locations" to allText("location")
             )
         )
@@ -66,7 +67,7 @@ class NationalTerrorismAdvisoryAlertSource(context: Context) : AlertSource {
                 severity = severity,
                 certainty = Certainty.Unknown,
                 link = link,
-                description = "$summary\n\n$details".trim(),
+                description = HtmlTextFormatter.getText("$summary\n\n$details".trim()),
                 area = locations?.let { Area(emptyList(), it) }
             )
         }

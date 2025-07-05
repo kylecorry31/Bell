@@ -117,7 +117,7 @@ object StateUtils {
         area: Area?,
         includeBorderingStates: Boolean = false
     ): Boolean {
-        if (area == null) {
+        if (area == null || area.states.isEmpty()) {
             return true
         }
 

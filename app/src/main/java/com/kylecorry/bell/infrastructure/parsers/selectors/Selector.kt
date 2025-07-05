@@ -20,15 +20,17 @@ data class Selector(
     val index: Int? = null,
     val valueOverride: String? = null,
     val delimiter: String = ", ",
+    val raw: Boolean = false,
     val mapFn: (String?) -> String? = { it }
 ) {
     companion object {
         fun text(
             selector: String,
             index: Int = 0,
+            raw: Boolean = false,
             mapFn: (String?) -> String? = { it }
         ): Selector {
-            return Selector(selector, index = index, mapFn = mapFn)
+            return Selector(selector, index = index, mapFn = mapFn, raw = raw)
         }
 
         fun attr(
@@ -102,6 +104,8 @@ private fun selectHtml(element: Element, selector: Selector): String? {
         return selector.mapFn(elements.mapNotNull {
             if (selector.attribute != null) {
                 it.attr(selector.attribute)
+            } else if (selector.raw) {
+                it.html()
             } else {
                 it.wholeText()
             }
@@ -113,6 +117,8 @@ private fun selectHtml(element: Element, selector: Selector): String? {
     return selector.mapFn(
         if (selector.attribute != null) {
             selectedElement.attr(selector.attribute)
+        } else if (selector.raw) {
+            selectedElement.html()
         } else {
             selectedElement.wholeText()
         }
@@ -214,7 +220,7 @@ private fun selectJson(node: Any, selector: Selector): String? {
     }).trimEnd('.').replace(" ", ".")
 
     val elements = try {
-        if (node is String){
+        if (node is String) {
             JsonPath.read(node.toString(), fullSelector)
         } else {
             JsonPath.read<Any>(node, fullSelector)

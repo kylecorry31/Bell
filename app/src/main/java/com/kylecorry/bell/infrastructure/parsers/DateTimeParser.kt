@@ -138,6 +138,7 @@ object DateTimeParser {
             DateTimeFormatter.ofPattern("MM/dd/yyyy h:mm a"),
             DateTimeFormatter.ofPattern("MM/dd/yyyy, h:mm a"),
             DateTimeFormatter.ofPattern("'('yyyyMMdd'/'HHmm')'"),
+            DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"),
         )
 
         for (pattern in patterns) {
