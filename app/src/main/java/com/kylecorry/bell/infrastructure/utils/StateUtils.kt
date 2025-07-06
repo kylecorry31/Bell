@@ -161,4 +161,14 @@ object StateUtils {
         return stateCodeMap[state.uppercase()]
     }
 
+    fun getStateName(state: String): String? {
+        // It's a code
+        if (stateBorders.containsKey(state.uppercase())) {
+            return stateCodeMap.entries.firstOrNull { it.value == state.uppercase() }?.key
+        }
+
+        // It's a name
+        return state
+    }
+
 }

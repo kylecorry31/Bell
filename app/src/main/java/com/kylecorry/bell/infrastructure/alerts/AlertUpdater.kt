@@ -8,6 +8,7 @@ import com.kylecorry.bell.infrastructure.alerts.crime.NationalTerrorismAdvisoryA
 import com.kylecorry.bell.infrastructure.alerts.earthquake.USGSEarthquakeAlertSource
 import com.kylecorry.bell.infrastructure.alerts.economy.BLSSummaryAlertSource
 import com.kylecorry.bell.infrastructure.alerts.economy.FuelPricesAlertSource
+import com.kylecorry.bell.infrastructure.alerts.economy.USPSAlertSource
 import com.kylecorry.bell.infrastructure.alerts.fire.InciwebWildfireAlertSource
 import com.kylecorry.bell.infrastructure.alerts.health.HealthAlertNetworkAlertSource
 import com.kylecorry.bell.infrastructure.alerts.health.USOutbreaksAlertSource
@@ -97,9 +98,11 @@ class AlertUpdater(private val context: Context) {
 
         // Delete any alerts that are no longer present
         val sourceIds = sources.map { it.getUUID() }
-        val toDelete = alerts.filterNot {
-            sourceIds.contains(it.source) && !failedSources.contains(it.source) && allAlerts.any { alert -> alert.identifier == it.identifier && alert.source == it.source }
-        }
+        val toDelete = alerts
+            .filter { sourceIds.contains(it.source) }
+            .filterNot {
+                !failedSources.contains(it.source) && allAlerts.any { alert -> alert.identifier == it.identifier && alert.source == it.source }
+            }
         toDelete.forEach { repo.delete(it) }
         onAlertsUpdated(repo.getAll())
 
@@ -149,7 +152,8 @@ class AlertUpdater(private val context: Context) {
             if (!vitalOnly) USOutbreaksAlertSource(context) else null,
             if (!vitalOnly) IC3InternetCrimeAlertSource(context) else null,
             if (!vitalOnly) NationalTerrorismAdvisoryAlertSource(context) else null,
-            if (!vitalOnly) SentryAsteroidAlertSource(context) else null
+            if (!vitalOnly) SentryAsteroidAlertSource(context) else null,
+            if (!vitalOnly) USPSAlertSource(context, preferences.state) else null
         )
     }
 
