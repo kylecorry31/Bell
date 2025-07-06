@@ -22,7 +22,7 @@ import java.time.ZoneId
 class InciwebWildfireAlertSource(context: Context) : AlertSource {
 
     private val lastUpdatedDateRegex = Regex("Last updated: (\\d{4}-\\d{2}-\\d{2})")
-    private val stateRegex = Regex("State: (\\w+)")
+    private val stateRegex = Regex("State: ([\\w\\s]+)")
     private val fireNameRegex = Regex("[A-Z0-9]+\\s(.+)\\sFire")
 
     private val loader = AlertLoader(context)
@@ -69,7 +69,7 @@ class InciwebWildfireAlertSource(context: Context) : AlertSource {
                 ?.let { DateTimeParser.parseInstant(it, ZoneId.of("America/New_York")) }
                 ?: originalSent
 
-            var state = stateRegex.find(description)?.groupValues?.get(1)
+            var state = stateRegex.find(description)?.groupValues?.get(1)?.trim()
             if (state.isNullOrBlank()) {
                 val words = SimpleWordTokenizer().tokenize(description).toSet()
                 state = words.firstOrNull { word -> StateUtils.isState(word, false) }
