@@ -23,7 +23,8 @@ class AlertLoader(context: Context) {
         items: String,
         attributes: Map<String, Selector>,
         additionalHeaders: Map<String, String?> = mapOf(),
-        mitigate304: Boolean = true
+        mitigate304: Boolean = true,
+        responsePreprocessor: ((String) -> String)? = null
     ): List<Map<String, String?>> = onIO {
         val headers = mutableMapOf(
             "User-Agent" to "Mozilla/5.0 (Linux; Android 13; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
@@ -45,7 +46,10 @@ class AlertLoader(context: Context) {
         } else {
             url
         }
-        val response = http.get(actualUrl, headers = headers)
+        var response = http.get(actualUrl, headers = headers)
+        if (responsePreprocessor != null) {
+            response = responsePreprocessor(response)
+        }
 
         val alertItems = select(
             when (type) {

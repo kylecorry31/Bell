@@ -125,6 +125,10 @@ class AlertUpdater(private val context: Context) {
         }
 
         onAlertsUpdated(repo.getAll())
+        Log.d(
+            "AlertUpdater",
+            "New: ${newAlerts.size}, Updated: ${updatedAlerts.size}, Deleted: ${toDelete.size}, Failed: ${failedSources.size}"
+        )
         return newAlerts
     }
 

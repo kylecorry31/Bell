@@ -41,7 +41,8 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
                     message,
                     R.drawable.alert_circle,
                     group = "alerts",
-                    intent = NavigationUtils.pendingIntent(applicationContext, R.id.action_main)
+                    intent = NavigationUtils.pendingIntent(applicationContext, R.id.action_main),
+                    autoCancel = true
                 )
                 Notify.send(applicationContext, group.key.ordinal, notification)
             }

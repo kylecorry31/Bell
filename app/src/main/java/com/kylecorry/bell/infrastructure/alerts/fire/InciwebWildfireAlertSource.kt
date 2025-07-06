@@ -44,7 +44,10 @@ class InciwebWildfireAlertSource(context: Context) : AlertSource {
                 "sent" to text("pubDate"),
                 "identifier" to text("guid")
             )
-        )
+        ){
+            // This message sometimes gets appended after the closing tag of the rss feed
+            it.replace("The website encountered an unexpected error. Try again later.<br />", "")
+        }
 
         return rawAlerts.mapNotNull {
             val title = it["title"] ?: return@mapNotNull null
