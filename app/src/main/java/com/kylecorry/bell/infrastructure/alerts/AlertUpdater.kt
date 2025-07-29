@@ -1,5 +1,6 @@
 package com.kylecorry.bell.infrastructure.alerts
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.util.Log
 import com.kylecorry.bell.domain.Alert
@@ -27,13 +28,17 @@ import com.kylecorry.bell.infrastructure.summarization.Gemini
 import com.kylecorry.bell.infrastructure.utils.ParallelCoroutineRunner
 import com.kylecorry.bell.infrastructure.utils.StateUtils
 import com.kylecorry.luna.coroutines.onIO
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
-class AlertUpdater(private val context: Context) {
+class AlertUpdater private constructor(private val context: Context) {
 
     private val repo = AlertRepo.getInstance(context)
     private val preferences = UserPreferences(context)
     private val gemini = Gemini(context, preferences.geminiApiKey)
     private val pageDownloader = WebPageDownloader(context)
+
+    private val lock = Mutex()
 
     suspend fun update(
         setProgress: (Float) -> Unit = {},
@@ -41,98 +46,100 @@ class AlertUpdater(private val context: Context) {
         onAlertsUpdated: (List<Alert>) -> Unit = {},
         onlyUpdateVitalAlerts: Boolean = false
     ): List<Alert> {
-        repo.cleanup()
+        lock.withLock {
+            repo.cleanup()
 
-        val state = preferences.state
+            val state = preferences.state
 
-        val alerts = repo.getAll()
+            val alerts = repo.getAll()
 
-        val sources = getSources(onlyUpdateVitalAlerts)
+            val sources = getSources(onlyUpdateVitalAlerts)
 
-        var completedCount = 0
-        val totalCount = sources.size
-        val lock = Any()
-        val failedSources = mutableSetOf<String>()
+            var completedCount = 0
+            val totalCount = sources.size
+            val lock = Any()
+            val failedSources = mutableSetOf<String>()
 
-        val runner = ParallelCoroutineRunner()
-        val allAlerts = runner.map(sources) {
-            try {
-                // TODO: If this fails, let the user know
-                val sourceAlerts = it.load()
-                    .filter {
-                        it.isValid() && StateUtils.shouldShowAlert(
-                            state,
-                            it.area,
-                            it.impactsBorderingStates
-                        )
+            val runner = ParallelCoroutineRunner()
+            val allAlerts = runner.map(sources) {
+                try {
+                    // TODO: If this fails, let the user know
+                    val sourceAlerts = it.load()
+                        .filter {
+                            it.isValid() && StateUtils.shouldShowAlert(
+                                state,
+                                it.area,
+                                it.impactsBorderingStates
+                            )
+                        }
+                        .sortedByDescending { it.sent }
+                        .distinctBy { it.identifier }
+                    synchronized(lock) {
+                        completedCount++
+                        setProgress(completedCount.toFloat() / totalCount)
                     }
-                    .sortedByDescending { it.sent }
-                    .distinctBy { it.identifier }
-                synchronized(lock) {
-                    completedCount++
-                    setProgress(completedCount.toFloat() / totalCount)
+                    sourceAlerts
+                } catch (e: Exception) {
+                    Log.e("AlertUpdater", "Failed to get alerts from ${it.getUUID()}", e)
+                    synchronized(lock) {
+                        failedSources.add(it.getUUID())
+                    }
+                    emptyList()
                 }
-                sourceAlerts
-            } catch (e: Exception) {
-                Log.e("AlertUpdater", "Failed to get alerts from ${it.getUUID()}", e)
-                synchronized(lock) {
-                    failedSources.add(it.getUUID())
+            }.flatten()
+
+            val newAlerts = allAlerts.filterNot { alert ->
+                alerts.any { it.identifier == alert.identifier && it.source == alert.source }
+            }
+
+            val updatedAlerts = allAlerts.mapNotNull { alert ->
+                val existing =
+                    alerts.find { it.identifier == alert.identifier && it.source == alert.source }
+                if (existing != null && existing.sent != alert.sent && existing.isTracked) {
+                    alert.copy(id = existing.id)
+                } else {
+                    null
                 }
-                emptyList()
             }
-        }.flatten()
 
-        val newAlerts = allAlerts.filterNot { alert ->
-            alerts.any { it.identifier == alert.identifier && it.source == alert.source }
+            // Delete any alerts that are no longer present
+            val sourceIds = sources.map { it.getUUID() }
+            val toDelete = alerts
+                .filter { sourceIds.contains(it.source) }
+                .filterNot {
+                    !failedSources.contains(it.source) && allAlerts.any { alert -> alert.identifier == it.identifier && alert.source == it.source }
+                }
+            toDelete.forEach { repo.delete(it) }
+            onAlertsUpdated(repo.getAll())
+
+            setProgress(0f)
+            setLoadingMessage("summaries")
+
+            var completedSummaryCount = 0
+
+            // Generate summaries and save new/updated alerts
+            (newAlerts + updatedAlerts).forEach { alert ->
+                setProgress(completedSummaryCount.toFloat() / (newAlerts.size + updatedAlerts.size))
+
+                if (alert.shouldDownload()) {
+                    reloadSummary(alert)
+                } else {
+                    repo.upsert(alert)
+                }
+                // Don't update the list right away for old alerts
+                if (completedSummaryCount % 10 == 0) {
+                    onAlertsUpdated(repo.getAll())
+                }
+                completedSummaryCount++
+            }
+
+            onAlertsUpdated(repo.getAll())
+            Log.d(
+                "AlertUpdater",
+                "New: ${newAlerts.size}, Updated: ${updatedAlerts.size}, Deleted: ${toDelete.size}, Failed: ${failedSources.size}"
+            )
+            return newAlerts
         }
-
-        val updatedAlerts = allAlerts.mapNotNull { alert ->
-            val existing =
-                alerts.find { it.identifier == alert.identifier && it.source == alert.source }
-            if (existing != null && existing.sent != alert.sent && existing.isTracked) {
-                alert.copy(id = existing.id)
-            } else {
-                null
-            }
-        }
-
-        // Delete any alerts that are no longer present
-        val sourceIds = sources.map { it.getUUID() }
-        val toDelete = alerts
-            .filter { sourceIds.contains(it.source) }
-            .filterNot {
-                !failedSources.contains(it.source) && allAlerts.any { alert -> alert.identifier == it.identifier && alert.source == it.source }
-            }
-        toDelete.forEach { repo.delete(it) }
-        onAlertsUpdated(repo.getAll())
-
-        setProgress(0f)
-        setLoadingMessage("summaries")
-
-        var completedSummaryCount = 0
-
-        // Generate summaries and save new/updated alerts
-        (newAlerts + updatedAlerts).forEach { alert ->
-            setProgress(completedSummaryCount.toFloat() / (newAlerts.size + updatedAlerts.size))
-
-            if (alert.shouldDownload()) {
-                reloadSummary(alert)
-            } else {
-                repo.upsert(alert)
-            }
-            // Don't update the list right away for old alerts
-            if (completedSummaryCount % 10 == 0) {
-                onAlertsUpdated(repo.getAll())
-            }
-            completedSummaryCount++
-        }
-
-        onAlertsUpdated(repo.getAll())
-        Log.d(
-            "AlertUpdater",
-            "New: ${newAlerts.size}, Updated: ${updatedAlerts.size}, Deleted: ${toDelete.size}, Failed: ${failedSources.size}"
-        )
-        return newAlerts
     }
 
     private fun getSources(vitalOnly: Boolean = false): List<AlertSource> {
@@ -181,5 +188,18 @@ class AlertUpdater(private val context: Context) {
         val newAlert = alert.copy(llmSummary = summary)
         val id = repo.upsert(newAlert)
         return newAlert.copy(id = id)
+    }
+
+    companion object {
+        @SuppressLint("StaticFieldLeak")
+        private var instance: AlertUpdater? = null
+
+        @Synchronized
+        fun getInstance(context: Context): AlertUpdater {
+            if (instance == null) {
+                instance = AlertUpdater(context.applicationContext)
+            }
+            return instance!!
+        }
     }
 }

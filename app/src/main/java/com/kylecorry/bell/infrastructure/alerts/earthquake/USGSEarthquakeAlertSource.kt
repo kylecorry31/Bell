@@ -14,6 +14,8 @@ import com.kylecorry.bell.infrastructure.parsers.DateTimeParser
 import com.kylecorry.bell.infrastructure.parsers.selectors.Selector.Companion.attr
 import com.kylecorry.bell.infrastructure.parsers.selectors.Selector.Companion.text
 import com.kylecorry.bell.infrastructure.utils.HtmlTextFormatter
+import com.kylecorry.bell.infrastructure.utils.SimpleWordTokenizer
+import com.kylecorry.bell.infrastructure.utils.StateUtils
 import com.kylecorry.sol.science.geology.Geofence
 import com.kylecorry.sol.units.Coordinate
 import com.kylecorry.sol.units.Distance
@@ -23,6 +25,8 @@ class USGSEarthquakeAlertSource(context: Context) : AlertSource {
     private val loader = AlertLoader(context)
 
     private val eventTimeRegex = Regex("<dt>Time</dt><dd>([^<]*)</dd>")
+    private val locationNameRegex =
+        Regex("M \\d+(?:\\.\\d+)? - (?:\\d+(?:\\.\\d+)? (?:km|mi) \\w+ of )?(.*)")
 
     override suspend fun load(): List<Alert> {
         val rawAlerts = loader.load(
@@ -49,12 +53,13 @@ class USGSEarthquakeAlertSource(context: Context) : AlertSource {
             val description = it["description"] ?: return@mapNotNull null
             val eventTime = eventTimeRegex.find(description)?.groupValues?.get(1) ?: ""
             val sent = DateTimeParser.parseInstant(eventTime) ?: originalSent
-            val location = if (title.contains(" of ")) {
-                title.substringAfter(" of")
-            } else {
-                null
+            val locationMatch = locationNameRegex.find(title)
+            val location = locationMatch?.groupValues?.get(1)?.trim()
+            val state = location?.let {
+                val tokens = SimpleWordTokenizer().tokenize(it)
+                tokens.firstNotNullOfOrNull { StateUtils.getStateName(it) }
             }
-            val locationText = location?.let { "near $it" }
+            val locationText = location?.let { "near ${it.trim()}" }
 
             val html = title + "\n\n" + HtmlTextFormatter.getText(
                 description.replace("</dd>", "</dd><br /><br />")
@@ -90,7 +95,7 @@ class USGSEarthquakeAlertSource(context: Context) : AlertSource {
                     val lat = parts[0].toDoubleOrNull() ?: 0.0
                     val lon = parts[1].toDoubleOrNull() ?: 0.0
                     Area(
-                        listOf(),
+                        listOfNotNull(state),
                         circles = listOf(
                             Geofence(Coordinate(lat, lon), Distance.kilometers(0f))
                         )

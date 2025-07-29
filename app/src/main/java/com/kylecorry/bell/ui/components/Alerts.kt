@@ -51,7 +51,7 @@ fun Alerts() = Component {
         setLoadingMessage("sources")
         setProgress(0f)
         inBackground {
-            val newAlerts = AlertUpdater(context).update(
+            val newAlerts = AlertUpdater.getInstance(context).update(
                 setProgress = setProgress,
                 setLoadingMessage = setLoadingMessage,
                 onAlertsUpdated = setAlerts
@@ -91,13 +91,13 @@ fun Alerts() = Component {
     Column(
         Row(
             {
-            marginTop = dp16
-            marginStart = dp16
-            marginEnd = dp16
-            marginBottom = dp16
-            layoutGravity = Gravity.CENTER_HORIZONTAL
-            width = ViewGroup.LayoutParams.WRAP_CONTENT
-        },
+                marginTop = dp16
+                marginStart = dp16
+                marginEnd = dp16
+                marginBottom = dp16
+                layoutGravity = Gravity.CENTER_HORIZONTAL
+                width = ViewGroup.LayoutParams.WRAP_CONTENT
+            },
             EditText {
                 text = preferences.state
                 updateText = true

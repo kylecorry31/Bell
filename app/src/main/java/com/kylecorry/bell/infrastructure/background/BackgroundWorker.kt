@@ -25,7 +25,8 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
 
     override suspend fun doWork(): Result {
         Log.d("BackgroundWorker", "Updating alerts")
-        val newAlerts = AlertUpdater(applicationContext).update(onlyUpdateVitalAlerts = isMetered())
+        val newAlerts = AlertUpdater.getInstance(applicationContext)
+             .update(onlyUpdateVitalAlerts = isMetered())
         val importantAlerts =
             newAlerts.filter { it.severity != Severity.Minor && it.severity != Severity.Unknown }
 
