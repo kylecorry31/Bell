@@ -116,9 +116,6 @@ dependencies {
     implementation(libs.andromeda.json)
     implementation(libs.andromeda.markdown)
 
-    // Volley
-    implementation(libs.volley)
-
     // Jsoup
     implementation(libs.jsoup)
 

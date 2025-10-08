@@ -15,7 +15,7 @@ enum class FileType {
 }
 
 class AlertLoader(context: Context) {
-    private val http = HttpService(context)
+    private val http = HttpService()
 
     suspend fun load(
         type: FileType,

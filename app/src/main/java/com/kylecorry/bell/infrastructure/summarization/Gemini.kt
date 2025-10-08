@@ -15,7 +15,7 @@ class Gemini(context: Context, private val apiKey: String) {
 
     class GeminiInput(var contents: List<GeminiContent>)
 
-    private val http = HttpService(context)
+    private val http = HttpService()
 
     private var requestTimes = mutableListOf<Long>()
 

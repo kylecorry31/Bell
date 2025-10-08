@@ -25,7 +25,6 @@ sol = "11.2.0"
 luna = "0.3.6"
 workRuntimeKtx = "2.10.2"
 preferenceKtx = "1.2.1"
-volley = "1.2.1"
 jsoup = "1.21.1"
 gson = "2.13.1"
 jsonpath = "2.9.0"
@@ -74,7 +73,6 @@ material = { module = "com.google.android.material:material", version.ref = "mat
 mockito-kotlin = { module = "org.mockito.kotlin:mockito-kotlin", version.ref = "mockitoKotlinVersion" }
 sol = { module = "com.kylecorry:sol", version.ref = "sol" }
 luna = { module = "com.kylecorry:luna", version.ref = "luna" }
-volley = { module = "com.android.volley:volley", version.ref = "volley" }
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 jsonpath = { module = "com.jayway.jsonpath:json-path", version.ref = "jsonpath" }

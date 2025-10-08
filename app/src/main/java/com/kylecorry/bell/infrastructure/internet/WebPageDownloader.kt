@@ -2,11 +2,9 @@ package com.kylecorry.bell.infrastructure.internet
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.util.Log
 import android.webkit.ValueCallback
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import com.google.gson.Gson
 import com.kylecorry.andromeda.core.tryOrDefault
 import com.kylecorry.luna.coroutines.onMain
 import kotlinx.coroutines.runBlocking
@@ -16,7 +14,7 @@ import kotlin.coroutines.resume
 
 class WebPageDownloader(private val context: Context) {
 
-    private val http = HttpService(context)
+    private val http = HttpService()
 
     suspend fun download(url: String): String? {
         return tryOrDefault(null) {
