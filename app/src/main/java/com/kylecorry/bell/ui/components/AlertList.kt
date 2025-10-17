@@ -149,10 +149,10 @@ fun AlertList(config: AlertListAttributes.() -> Unit) = Component(config) { attr
     }
 
     val reloadAlertSummary = useCallback<Alert, Unit>(context, alertUpdater, showAlertDialog) { alert ->
+        Alerts.toast(context, "Reloading summary...")
         inBackground {
             val updatedAlert = alertUpdater.reloadSummary(alert)
             onMain {
-                Alerts.toast(context, "Summary reloaded")
                 showAlertDialog(updatedAlert)
             }
         }
