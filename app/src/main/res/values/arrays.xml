@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Sync interval options -->
+    <string-array name="sync_interval_entries">
+        <item>15 minutes</item>
+        <item>30 minutes</item>
+        <item>1 hour</item>
+        <item>2 hours</item>
+        <item>4 hours</item>
+        <item>6 hours</item>
+        <item>12 hours</item>
+        <item>24 hours</item>
+    </string-array>
+
+    <string-array name="sync_interval_values" translatable="false">
+        <item>15</item>
+        <item>30</item>
+        <item>60</item>
+        <item>120</item>
+        <item>240</item>
+        <item>360</item>
+        <item>720</item>
+        <item>1440</item>
+    </string-array>
+
+    <!-- Notification category options -->
+    <string-array name="notification_category_entries">
+        <item>@string/geophysical</item>
+        <item>@string/meteorological</item>
+        <item>@string/safety</item>
+        <item>@string/security</item>
+        <item>@string/rescue</item>
+        <item>@string/fire</item>
+        <item>@string/health</item>
+        <item>@string/environmental</item>
+        <item>@string/transport</item>
+        <item>@string/infrastructure</item>
+        <item>@string/cbrne</item>
+        <item>@string/other</item>
+    </string-array>
+
+    <string-array name="notification_category_values" translatable="false">
+        <item>Geophysical</item>
+        <item>Meteorological</item>
+        <item>Safety</item>
+        <item>Security</item>
+        <item>Rescue</item>
+        <item>Fire</item>
+        <item>Health</item>
+        <item>Environmental</item>
+        <item>Transport</item>
+        <item>Infrastructure</item>
+        <item>CBRNE</item>
+        <item>Other</item>
+    </string-array>
+
+    <!-- Default notification categories (all categories enabled by default) -->
+    <string-array name="default_notification_categories" translatable="false">
+        <item>Geophysical</item>
+        <item>Meteorological</item>
+        <item>Safety</item>
+        <item>Security</item>
+        <item>Rescue</item>
+        <item>Fire</item>
+        <item>Health</item>
+        <item>Environmental</item>
+        <item>Transport</item>
+        <item>Infrastructure</item>
+        <item>CBRNE</item>
+        <item>Other</item>
+    </string-array>
+</resources>

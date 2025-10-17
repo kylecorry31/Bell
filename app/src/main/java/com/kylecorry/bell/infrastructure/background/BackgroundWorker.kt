@@ -25,13 +25,17 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
 
     override suspend fun doWork(): Result {
         Log.d("BackgroundWorker", "Updating alerts")
+        val preferences = com.kylecorry.bell.infrastructure.persistence.UserPreferences(applicationContext)
         val newAlerts = AlertUpdater.getInstance(applicationContext)
              .update(onlyUpdateVitalAlerts = isMetered())
         val importantAlerts =
             newAlerts.filter { it.severity != Severity.Minor && it.severity != Severity.Unknown }
+        
+        val notificationCategories = preferences.notificationCategories
+        val filteredAlerts = importantAlerts.filter { it.category in notificationCategories }
 
-        if (importantAlerts.any()) {
-            val grouped = importantAlerts.groupBy { it.category }
+        if (filteredAlerts.any()) {
+            val grouped = filteredAlerts.groupBy { it.category }
             for (group in grouped) {
                 val message =
                     group.value.joinToString("\n") { "[${it.severity.name.uppercase()}] ${it.event}" }
@@ -65,7 +69,9 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
 
         fun enable(context: Context, enabled: Boolean) {
             if (enabled) {
-                scheduler(context).interval(Duration.ofHours(1))
+                val preferences = com.kylecorry.bell.infrastructure.persistence.UserPreferences(context)
+                val intervalMinutes = preferences.syncIntervalMinutes
+                scheduler(context).interval(Duration.ofMinutes(intervalMinutes.toLong()))
             } else {
                 scheduler(context).cancel()
             }

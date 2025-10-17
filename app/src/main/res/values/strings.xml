@@ -18,4 +18,18 @@
     <string name="travel">Travel</string>
     <string name="economy">Economy</string>
     <string name="crime">Crime</string>
+    <string name="notifications">Notifications</string>
+    <string name="sync_interval">Sync interval</string>
+    <string name="sync_interval_summary">How often to check for new alerts</string>
+    <string name="notification_categories">Notification categories</string>
+    <string name="notification_categories_summary">Which alert categories trigger notifications</string>
+    <string name="geophysical">Geophysical</string>
+    <string name="meteorological">Meteorological</string>
+    <string name="safety">Safety</string>
+    <string name="security">Security</string>
+    <string name="rescue">Rescue</string>
+    <string name="environmental">Environmental</string>
+    <string name="transport">Transport</string>
+    <string name="infrastructure">Infrastructure</string>
+    <string name="cbrne">CBRNE</string>
 </resources>

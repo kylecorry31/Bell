@@ -1,4 +1,29 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <PreferenceCategory
+        android:title="@string/notifications"
+        app:iconSpaceReserved="false">
+
+        <ListPreference
+            android:defaultValue="60"
+            android:entries="@array/sync_interval_entries"
+            android:entryValues="@array/sync_interval_values"
+            android:key="sync_interval"
+            android:summary="@string/sync_interval_summary"
+            android:title="@string/sync_interval"
+            app:iconSpaceReserved="false"
+            app:useSimpleSummaryProvider="true" />
+
+        <MultiSelectListPreference
+            android:defaultValue="@array/default_notification_categories"
+            android:entries="@array/notification_category_entries"
+            android:entryValues="@array/notification_category_values"
+            android:key="notification_categories"
+            android:summary="@string/notification_categories_summary"
+            android:title="@string/notification_categories"
+            app:iconSpaceReserved="false" />
+
+    </PreferenceCategory>
+
 </PreferenceScreen>
