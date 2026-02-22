@@ -146,7 +146,8 @@ class AlertUpdater private constructor(private val context: Context) {
         return listOfNotNull(
             NationalWeatherServiceAlertSource(context, preferences.state),
             if (!vitalOnly) USGSEarthquakeAlertSource(context) else null,
-            if (!vitalOnly) USGSWaterAlertSource(context) else null,
+            // TODO: This was taking too long and timeouts aren't working properly
+//            if (!vitalOnly) USGSWaterAlertSource(context) else null,
             if (!vitalOnly) SWPCAlertSource(context) else null,
             if (!vitalOnly) HealthAlertNetworkAlertSource(context) else null,
             USGSVolcanoAlertSource(context),

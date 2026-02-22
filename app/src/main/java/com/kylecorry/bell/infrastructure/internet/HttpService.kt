@@ -1,5 +1,7 @@
 package com.kylecorry.bell.infrastructure.internet
 
+import java.time.Duration
+
 class HttpService {
 
     suspend fun get(
@@ -8,7 +10,13 @@ class HttpService {
         shouldRetryNotFoundWithoutExtension: Boolean = true
     ): String {
         val client = HttpClient()
-        val response = client.send(url, headers = headers, followRedirects = false)
+        val response = client.send(
+            url,
+            headers = headers,
+            followRedirects = false,
+            connectTimeout = CONNECT_TIMEOUT,
+            readTimeout = READ_TIMEOUT
+        )
         if (response.code == 301 || response.code == 302) {
             val location = response.headers.getOrDefault("Location", emptyList()).firstOrNull()
             if (location != null) {
@@ -32,10 +40,22 @@ class HttpService {
     suspend fun post(url: String, body: String, headers: Map<String, String> = emptyMap()): String {
         val client = HttpClient()
         val response =
-            client.send(url, method = HttpMethod.POST, body = body.toByteArray(), headers = headers)
+            client.send(
+                url,
+                method = HttpMethod.POST,
+                body = body.toByteArray(),
+                headers = headers,
+                connectTimeout = CONNECT_TIMEOUT,
+                readTimeout = READ_TIMEOUT
+            )
         if (!response.isSuccessful()) {
             throw Exception("HTTP error ${response.code} ($url)")
         }
         return response.contentAsString() ?: ""
+    }
+
+    companion object {
+        private val CONNECT_TIMEOUT = Duration.ofSeconds(10)
+        private val READ_TIMEOUT = Duration.ofSeconds(10)
     }
 }
