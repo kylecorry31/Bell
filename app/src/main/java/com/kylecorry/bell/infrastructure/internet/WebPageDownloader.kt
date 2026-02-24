@@ -9,6 +9,8 @@ import com.kylecorry.andromeda.core.tryOrDefault
 import com.kylecorry.luna.coroutines.onMain
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withTimeout
+import java.time.Duration
 import kotlin.coroutines.resume
 
 
@@ -16,39 +18,52 @@ class WebPageDownloader(private val context: Context) {
 
     private val http = HttpService()
 
-    suspend fun download(url: String): String? {
+    suspend fun download(url: String, timeout: Duration): String? {
         return tryOrDefault(null) {
-            http.get(
-                url, headers = mapOf(
-                    "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3",
-                    "Accept" to "*/*"
+            withTimeout(timeout.toMillis()) {
+                http.get(
+                    url, headers = mapOf(
+                        "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3",
+                        "Accept" to "*/*"
+                    )
                 )
-            )
+            }
+        }
+    }
+
+    suspend fun downloadAsBrowser(url: String, timeout: Duration): String? {
+        return tryOrDefault(null) {
+            withTimeout(timeout.toMillis()) {
+                downloadAsBrowserInternal(url)
+            }
         }
     }
 
     @SuppressLint("SetJavaScriptEnabled")
-    suspend fun downloadAsBrowser(url: String): String? = suspendCancellableCoroutine { cont ->
-        runBlocking {
-            onMain {
-                val webView = WebView(context)
+    suspend fun downloadAsBrowserInternal(url: String): String? =
+        suspendCancellableCoroutine { cont ->
+            runBlocking {
+                onMain {
+                    val webView = WebView(context)
 
-                webView.getSettings().javaScriptEnabled = true
+                    webView.getSettings().javaScriptEnabled = true
 
-                webView.setWebViewClient(object : WebViewClient() {
-                    override fun onPageFinished(view: WebView?, url: String?) {
-                        webView.evaluateJavascript(
-                            "document.documentElement.outerHTML;",
-                            ValueCallback { html: String? ->
-                                val formatted = html?.replace("\\u003C", "<")?.replace("\\n", "\n")?.replace("\\\"", "\"")?.replace("\\\\", "\\")
-                                cont.resume(formatted)
-                            })
-                    }
-                })
+                    webView.setWebViewClient(object : WebViewClient() {
+                        override fun onPageFinished(view: WebView?, url: String?) {
+                            webView.evaluateJavascript(
+                                "document.documentElement.outerHTML;",
+                                ValueCallback { html: String? ->
+                                    val formatted =
+                                        html?.replace("\\u003C", "<")?.replace("\\n", "\n")
+                                            ?.replace("\\\"", "\"")?.replace("\\\\", "\\")
+                                    cont.resume(formatted)
+                                })
+                        }
+                    })
 
-                webView.loadUrl(url)
+                    webView.loadUrl(url)
+                }
             }
         }
-    }
 
 }

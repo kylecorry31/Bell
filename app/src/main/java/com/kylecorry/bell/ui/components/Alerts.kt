@@ -53,7 +53,6 @@ fun Alerts() = Component {
         inBackground {
             val newAlerts = AlertUpdater.getInstance(context).update(
                 setProgress = setProgress,
-                setLoadingMessage = setLoadingMessage,
                 onAlertsUpdated = setAlerts
             )
             // TODO: Highlight new alerts instead
