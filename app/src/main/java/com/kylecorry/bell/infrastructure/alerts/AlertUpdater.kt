@@ -20,7 +20,6 @@ import com.kylecorry.bell.infrastructure.alerts.travel.WorldwideCautionAlertSour
 import com.kylecorry.bell.infrastructure.alerts.volcano.USGSVolcanoAlertSource
 import com.kylecorry.bell.infrastructure.alerts.water.NationalTsunamiAlertSource
 import com.kylecorry.bell.infrastructure.alerts.water.PacificTsunamiAlertSource
-import com.kylecorry.bell.infrastructure.alerts.water.USGSWaterAlertSource
 import com.kylecorry.bell.infrastructure.alerts.weather.NationalWeatherServiceAlertSource
 import com.kylecorry.bell.infrastructure.internet.WebPageDownloader
 import com.kylecorry.bell.infrastructure.persistence.AlertRepo
@@ -136,7 +135,6 @@ class AlertUpdater private constructor(private val context: Context) {
         return listOfNotNull(
             NationalWeatherServiceAlertSource(context, preferences.state),
             if (!vitalOnly) USGSEarthquakeAlertSource(context) else null,
-            if (!vitalOnly) USGSWaterAlertSource(context) else null,
             if (!vitalOnly) SWPCAlertSource(context) else null,
             if (!vitalOnly) HealthAlertNetworkAlertSource(context) else null,
             USGSVolcanoAlertSource(context),
