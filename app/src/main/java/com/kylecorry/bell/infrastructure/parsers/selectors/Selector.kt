@@ -52,9 +52,10 @@ data class Selector(
         fun allText(
             selector: String,
             delimiter: String = ", ",
+            raw: Boolean = false,
             mapFn: (String?) -> String? = { it }
         ): Selector {
-            return Selector(selector, delimiter = delimiter, mapFn = mapFn)
+            return Selector(selector, delimiter = delimiter, mapFn = mapFn, raw = raw)
         }
 
         fun allAttr(

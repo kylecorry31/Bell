@@ -16,6 +16,7 @@ import com.kylecorry.bell.infrastructure.alerts.health.USOutbreaksAlertSource
 import com.kylecorry.bell.infrastructure.alerts.space_weather.SWPCAlertSource
 import com.kylecorry.bell.infrastructure.alerts.space_weather.SentryAsteroidAlertSource
 import com.kylecorry.bell.infrastructure.alerts.travel.TravelAdvisoryAlertSource
+import com.kylecorry.bell.infrastructure.alerts.travel.WorldwideCautionAlertSource
 import com.kylecorry.bell.infrastructure.alerts.volcano.USGSVolcanoAlertSource
 import com.kylecorry.bell.infrastructure.alerts.water.NationalTsunamiAlertSource
 import com.kylecorry.bell.infrastructure.alerts.water.PacificTsunamiAlertSource
@@ -149,7 +150,8 @@ class AlertUpdater private constructor(private val context: Context) {
             if (!vitalOnly) IC3InternetCrimeAlertSource(context) else null,
             if (!vitalOnly) NationalTerrorismAdvisoryAlertSource(context) else null,
             if (!vitalOnly) SentryAsteroidAlertSource(context) else null,
-            if (!vitalOnly) USPSAlertSource(context, preferences.state) else null
+            if (!vitalOnly) USPSAlertSource(context, preferences.state) else null,
+            if (!vitalOnly) WorldwideCautionAlertSource(context) else null
         )
     }
 
