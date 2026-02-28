@@ -11,7 +11,6 @@ import com.kylecorry.bell.infrastructure.alerts.economy.BLSSummaryAlertSource
 import com.kylecorry.bell.infrastructure.alerts.economy.FuelPricesAlertSource
 import com.kylecorry.bell.infrastructure.alerts.economy.USPSAlertSource
 import com.kylecorry.bell.infrastructure.alerts.fire.InciwebWildfireAlertSource
-import com.kylecorry.bell.infrastructure.alerts.health.HealthAlertNetworkAlertSource
 import com.kylecorry.bell.infrastructure.alerts.health.USOutbreaksAlertSource
 import com.kylecorry.bell.infrastructure.alerts.space_weather.SWPCAlertSource
 import com.kylecorry.bell.infrastructure.alerts.space_weather.SentryAsteroidAlertSource
@@ -136,7 +135,6 @@ class AlertUpdater private constructor(private val context: Context) {
             NationalWeatherServiceAlertSource(context, preferences.state),
             if (!vitalOnly) USGSEarthquakeAlertSource(context) else null,
             if (!vitalOnly) SWPCAlertSource(context) else null,
-            if (!vitalOnly) HealthAlertNetworkAlertSource(context) else null,
             USGSVolcanoAlertSource(context),
             InciwebWildfireAlertSource(context),
             NationalTsunamiAlertSource(context),
