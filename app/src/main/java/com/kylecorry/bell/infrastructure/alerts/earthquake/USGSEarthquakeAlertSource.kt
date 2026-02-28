@@ -31,7 +31,7 @@ class USGSEarthquakeAlertSource(context: Context) : AlertSource {
     override suspend fun load(): List<Alert> {
         val rawAlerts = loader.load(
             FileType.XML,
-            "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/significant_day.atom",
+            "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/significant_hour.atom",
             "entry",
             mapOf(
                 "title" to text("title"),
