@@ -11,7 +11,6 @@ import com.kylecorry.bell.infrastructure.alerts.AlertLoader
 import com.kylecorry.bell.infrastructure.alerts.AlertSource
 import com.kylecorry.bell.infrastructure.alerts.FileType
 import com.kylecorry.bell.infrastructure.parsers.DateTimeParser
-import com.kylecorry.bell.infrastructure.parsers.selectors.Selector.Companion.attr
 import com.kylecorry.bell.infrastructure.parsers.selectors.Selector.Companion.text
 import com.kylecorry.bell.infrastructure.utils.HtmlTextFormatter
 import java.time.Duration
@@ -23,13 +22,13 @@ class HealthAlertNetworkAlertSource(context: Context) : AlertSource {
 
     override suspend fun load(): List<Alert> {
         val rawAlerts = loader.load(
-            FileType.HTML,
-            "https://tools.cdc.gov/api/v2/resources/media/126194/content.html",
-            ".bg-quaternary .card-body",
+            FileType.JSON,
+            "https://wcmssearch.cdc.gov/srch/internet_wcms/wcms_widget?q=*:*&fq=(type_txt:%22DFE%20Page%22%20AND%20cdc_dfe_template_str:(%22cdc_health_alert%22))%20OR%20type_txt:(%22Page%22)&fq=(topical_site_context_s:1984-2%20AND%20(permalink:*/han/php/notices/*))&fq=-id:1984_478&fq=-status:%22cdc_archive%22&fq=-is_hidden_b:true&wt=json&start=0&rows=10&fl=title_txt,permalink,cdc_article_date_dt,cdc_last_reviewed_date_dt&sort=cdc_last_reviewed_date_dt%20desc,cdc_article_date_dt%20desc&facet=on&facet.mincount=1&facet.field=cdc_topics_taxonomy_str&facet.field=cdc_topics_taxonomy_parents_str&facet.field=cdc_last_reviewed_date_dt&facet.limit=2000&echoParams=none&indent=false",
+            "response.docs",
             mapOf(
-                "headline" to text("a"),
-                "link" to attr("a", "href"),
-                "publishedDate" to text("p")
+                "headline" to text("title_txt"),
+                "link" to text("permalink"),
+                "publishedDate" to text("cdc_article_date_dt")
             )
         )
 
@@ -83,8 +82,8 @@ class HealthAlertNetworkAlertSource(context: Context) : AlertSource {
         }
 
         val summary = HtmlTextFormatter.getText(
-            fullText.substringAfter("<strong>Summary</strong>")
-                .substringBefore("<strong>Background</strong>")
+            fullText.substringAfter(">Summary</h2>")
+                .substringBefore("<div")
         )
 
         return alert.copy(
