@@ -1,0 +1,43 @@
+name: Release Upload
+permissions:
+  contents: write
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7.0.0
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.release.tag_name }}
+
+      - name: Setup Java
+        uses: actions/setup-java@v5.3.0
+        with:
+          distribution: "temurin"
+          java-version: 17
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Build GitHub release APK
+        run: |
+          echo ${DEV_STORE_FILE} | base64 -d > KEY_DEV.jks
+          DEV_KEY_ALIAS=$(echo -n $DEV_KEY_ALIAS | base64 -d)
+          ./gradlew assembleGithub -Dgithub_store_file=../KEY_DEV.jks -Dgithub_store_password="${DEV_STORE_PASSWORD}" -Dgithub_key_alias="${DEV_KEY_ALIAS}" -Dgithub_key_password="${DEV_STORE_PASSWORD}"
+        env:
+          DEV_STORE_PASSWORD: ${{ secrets.DEV_STORE_PASSWORD }}
+          DEV_KEY_ALIAS: ${{ secrets.DEV_KEY_ALIAS }}
+          DEV_STORE_FILE: ${{ secrets.DEV_STORE_FILE }}
+
+      - name: Upload GitHub release APK to release
+        uses: Shopify/upload-to-release@v2.0.0
+        with:
+          name: Bell-${{ github.event.release.tag_name }}-release.apk
+          path: ./app/build/outputs/apk/github/app-github.apk
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
